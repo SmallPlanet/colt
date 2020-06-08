@@ -1,2 +1,2 @@
-# colt
+# CoLT 🐎
 Command Line Translation
