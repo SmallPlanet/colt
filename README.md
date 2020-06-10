@@ -1,2 +1,3 @@
-# CoLT 🐎
-Command Line Translation
+# Colt
+
+A description of this package.
