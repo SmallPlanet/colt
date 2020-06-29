@@ -1,9 +1,69 @@
-/* 
+/*
   Localizable.strings
-  test
+  file name
 
   Created by Angie Sanders on 6/15/20.
   Copyright © 2020 Small Planet Digital. All rights reserved.
 */
 
-"title" = "title";
+"@WILDCARDCONTEXTUALHELP"="[b]You've unlocked the Sweeps Card![/b] Every receipt you submit from here counts as 2 entries in this week's Sweepstakes. That's double!";
+"@GOODSNAPINFO"="Make sure the merchant name, purchase date, and total price are visible on the receipt!  See the FAQs for all official requirements.";
+"@MULTIGOODSNAPINFO"="Line up the receipt with the guides along the edges.\n\nMake sure the Merchant Name, Purchase Date, and Total Price are all legible.\n\nTake up to five snaps if the receipt won’t fit.\n\nSee the FAQs for all official requirements. ";
+"@GOODSNAPNUMBERS"="1.\n\n\n\n2.\n\n\n\n3.\n\n\n\n4.";
+
+"@WILDCARD_UNREGISTERED"="Want a chance to win $%@?\n[b]Sure you do![/b]\n\n[s]Register now to participate in the weekly Sweepstakes.[/s]";
+"@WILDCARD_REGISTERED"="[h1]Sweepstakes Prize[/h1]\n[h2]$[/h2][h3]%@[/h3]";
+"@WILDCARD_DATE"="Next drawing in %@";
+
+"@WILDCARDSTYLEBASE" = "size=28,align=center,font=Avenir-Light,color=#FFFFFFFF,kerning=.5";
+"@WILDCARDSTYLEBOLD" = "size=28,align=center,font=Avenir-Heavy,color=#FFFFFFFF,kerning=.5";
+"@WILDCARDSTYLESMALL" = "size=16,align=center,font=Avenir-Medium,color=#FFFFFFFF,kerning=.5";
+
+"@WILDCARDSTYLEHEADER1" = "size=16,font=Avenir-Heavy,align=center";
+"@WILDCARDSTYLEHEADER2" = "size=90,font=npd_$-Regular,align=left";
+"@WILDCARDSTYLEHEADER3" = "size=90,font=Avenir-Light";
+
+"@HOMESCREENSTYLEBASE" = "size=16,align=center,font=Avenir-Book,color=#565656FF,kerning=.5";
+"@HOMESCREENSTYLEBOLD" = "size=16,align=center,font=Avenir-Heavy,color=#565656FF";
+
+"@WILDCARDCONTEXTUALHELPSTYLEBASE" = "size=18,align=left,font=Avenir-Book,color=#565656FF,kerning=.3";
+"@WILDCARDCONTEXTUALHELPSTYLEBOLD" = "size=18,align=left,font=Avenir-Heavy,color=#565656FF";
+
+"@ERECEIPTSTYLEBASE" = "size=14,align=center,font=Avenir-Light,color=#FFFFFFFF,kerning=.5";
+"@ERECEIPTSTYLELARGE" = "size=28,align=center,font=Avenir-Light,color=#FFFFFFFF,kerning=.5";
+"@ERECEIPTSTYLEBOLD" = "size=14,align=center,font=Avenir-Heavy,color=#FFFFFFFF,kerning=.5";
+
+"@PROMOCARDSTYLEBASE" = "size=16,align=center,font=Avenir-Light,color=#FFFFFFFF,kerning=.2";
+"@PROMOCARDSTYLELARGE" = "size=22,align=center,font=Avenir-Heavy,color=#FFFFFFFF";
+"@PROMOCARDSTYLEBOLD" = "size=16,align=center,font=Avenir-Heavy,color=#FFFFFFFF,";
+
+"@CARD_STATE1"="Snap a receipt to start [b]working toward rewards.[/b]";
+"@CARD_STATE2"="Fill all 4 boxes to \n[b]earn points.[/b]";
+"@CARD_STATE3"="Got it, thanks! [b]Stand by for validation.[/b]";
+"@CARD_STATE4"="Super, that's 4 boxes. You're [b]almost there.[/b]";
+"@CARD_STATE5"="The first one's on us. [b]You've earned it![/b]";
+
+"@REGISTRATIONDONE4"="A verification email has been sent\nto the address you provided. Follow the instructions to complete the registration process.\n\nIf you didn't get the email, please register again.";
+
+"@REGISTRATIONDONE2"="A verification email has been sent\nto the address you provided. Follow the instructions to complete the registration process.\n\nOnce your email address has been verified, your reward will be sent to you.";
+
+"@REGISTRATIONDONE3"="A verification email has been sent to the address you provided. Follow the instructions to complete the registration process.";
+
+"@INVALIDRECEIPT_UNREADABLE"="Unreadable";
+"@INVALIDRECEIPT_NOTARECEIPT"="Not a receipt";
+"@INVALIDRECEIPT_DUPLICATE"="Duplicate receipt";
+"@INVALIDRECEIPT_MULTIPLERECEIPTS"="Multiple receipts captured";
+"@INVALIDRECEIPT_OLDERTHAN"="Older than 30 days";
+
+
+"@RECEIPTS_UNREGISTEREDHEADER"="How to submit";
+"@ERECEIPT_UNREGISTEREDBODYTEXT"="Register and connect your email to automatically submit e-receipts.\n\nIf you are unable to connect your email, you can still forward them to receipts@receiptpalapp.com\nfrom your registered email.";
+"@ERECEIPT_REGISTEREDHEADER_AD_OFF"="Don’t forget to submit your\ne-receipts!";
+"@ERECEIPT_REGISTEREDSUBTEXT_AD_OFF_NOT_ENABLED"="You can forward them to receipts@receiptpalapp.com.";
+"@ERECEIPT_REGISTEREDSUBTEXT_AD_OFF_AND_ENABLED"="You can forward them to receipts@receiptpalapp.com.\n\nOr connect your email in Settings to automatically submit e-receipts!";
+
+"@ERECEIPT_REGISTEREDHEADER_AD_ON"="We've got you covered!";
+"@ERECEIPT_REGISTEREDSUBTEXT_AD_ON"="Thanks for connecting your email! Going forward, your e-receipts will be automatically submitted.";
+
+"@CAMERAPERMISSIONSERROR_TITLE"="Camera Access Required";
+"@CAMERAPERMISSIONSERROR_MESSAGE"="Please allow access to your camera to snap your receipts.";

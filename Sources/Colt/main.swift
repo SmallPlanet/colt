@@ -5,6 +5,8 @@ var slCode: String = ""
 var tlCode: String = ""
 var slStringsURL: URL?
 var tlStringsURL: URL?
+var slStringsDict: NSDictionary<String, Any>?
+var slStrings: KeyValuePairs<String, String> = [:]
 let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
@@ -22,6 +24,14 @@ struct Translate: ParsableCommand {
 		startColt()
 	}
 }
+
+//struct Strings : Printable {
+//    let key: String
+//    let copy: String
+//
+//    // println() should print just the unit name:
+//    var description: String { return name }
+//}
 
 func startColt() {
     print("startColt: \(slCode) to \(tlCode)")
@@ -45,20 +55,27 @@ func findStringsFiles() {
             tlStringsURL = fileURL
         }
     }
-
+    
     if slStringsURL == nil {
         showError("Localization folder cannot be found. Please specify a valid source language")
-        // exit()
-
-    } else if tlStringsURL == nil {
-        createNewDirectory()
+        // TODO: exit
     } else {
-        // translation already exists
+        parseSourceLanguageFile()
     }
 }
 
+func parseSourceLanguageFile() {
+    if let stringsUrl = slStringsURL {        
+        guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { exit(EX_DATAERR) }
+        slStringsDict = dictionary
+        print(dictionary)
+    }
+    
+    //if successful -> createNewDirectory()
+}
+
 func createNewDirectory() {
-    //TODO: better way to back up 2 components?
+    //better way to back up 2 components?
     guard let targetURL = slStringsURL?.deletingLastPathComponent().deletingLastPathComponent() else { print("no parent directory"); return }
     let tlFolderUrl = targetURL.appendingPathComponent("\(tlCode).lproj", isDirectory: true)
     do {
@@ -79,6 +96,8 @@ func createNewStringsFile(folderUrl: URL) {
         print("could not create .strings file")
     }
 }
+
+
 //
 //func copyStringsFile(to: URL, source: URL) {
 //    do {
@@ -94,6 +113,8 @@ func showError(_ error: String) {
 }
 
 Translate.main()
+
+//TODO: Move to Extensions file
 
 extension String {
    func appendLineToURL(fileURL: URL) throws {
