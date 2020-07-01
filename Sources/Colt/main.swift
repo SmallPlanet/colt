@@ -33,7 +33,10 @@ func startColt() {
     print("startColt: \(slCode) to \(tlCode)")
     guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
     guard supportedLanguageCodes.contains(tlCode) else { showError("Translation language is not supported."); return }
+    
+    // TODO: Check for network
 
+    //TODO: Finish the header
     //swiftlint:disable line_length
     stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
 
@@ -72,22 +75,38 @@ func translateSourceLanguage() {
     guard let _ = slStringsDictionary else { return }
     tlStringsDictionary = [:]
     for (key, value) in slStringsDictionary! {
-        translate(slKey: key, slText: value)
+        translate(slKey: key, slText: value) // TODO: Chanage to this returning a value and add to tlStringsDictionary
     }
     print(tlStringsDictionary! as Dictionary<String,String>)
 }
 
+struct StringTranslation: Codable {
+    var orig: String
+    var trans: String
+}
+
+struct SentencesObj: Codable {
+    var sentence: Dictionary<String,String>
+}
+
 func translate(slKey: String, slText: String) {
     guard let escapedText = slText.stringByAddingPercentEncoding(),
-        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)") else { return }
-    print("translating: \(escapedText)")
+        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)&dj=1") else { return }
+    print("translating: \(slText)")
 
     let request = URLRequest(url: url)
     URLSession.shared.dataTask(with: request) { data, _, error in
         if let data = data,
             let responseText: Array = String(data: data, encoding: .utf8)?.components(separatedBy: "\""),
             responseText.count > 1 {
-            tlStringsDictionary?[slKey] = responseText[1]
+            tlStringsDictionary?[slKey] = responseText[1] // TODO: Move up into translateSourceLanguage()
+            
+//            do {
+//                let product = try JSONDecoder().decode(SentencesObj.self, from: data)
+//                print(product)
+//            } catch {
+//                print("error")
+//            }
         } else {
             print(error!.localizedDescription)
             exit(EXIT_FAILURE)

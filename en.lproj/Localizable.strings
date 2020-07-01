@@ -4,11 +4,13 @@
  
  Created by Teju Prasad on 11/15/18.
  Copyright © 2018 Small Planet. All rights reserved.
+
+ "Tabs.Priority" = "Priority";
+ "Tabs.Plan" = "Call Plan";
+ "Tabs.Me" = "Me";
  */
 
-"Tabs.Priority" = "Priority";
-"Tabs.Plan" = "Call Plan";
-"Tabs.Me" = "Me";
+
 "Tabs.Settings" = "Settings";
 "Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
 
