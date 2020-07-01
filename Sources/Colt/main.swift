@@ -5,11 +5,15 @@ var slCode: String = ""
 var tlCode: String = ""
 var slStringsURL: URL?
 var tlStringsURL: URL?
-var slStringsDict: NSDictionary<String, Any>?
+var slStringsDictionary: Dictionary<String, String>?
+var tlStringsDictionary: Dictionary<String, String>?
 var slStrings: KeyValuePairs<String, String> = [:]
 let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
+
+let localURLSession = URLSession(configuration: URLSessionConfiguration.default)
+var sema = DispatchSemaphore( value: 0 )
 
 struct Translate: ParsableCommand {
 	@Argument()
@@ -24,14 +28,6 @@ struct Translate: ParsableCommand {
 		startColt()
 	}
 }
-
-//struct Strings : Printable {
-//    let key: String
-//    let copy: String
-//
-//    // println() should print just the unit name:
-//    var description: String { return name }
-//}
 
 func startColt() {
     print("startColt: \(slCode) to \(tlCode)")
@@ -65,13 +61,40 @@ func findStringsFiles() {
 }
 
 func parseSourceLanguageFile() {
-    if let stringsUrl = slStringsURL {        
-        guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { exit(EX_DATAERR) }
-        slStringsDict = dictionary
-        print(dictionary)
+    if let stringsUrl = slStringsURL {
+        guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { print("failed"); exit(EX_DATAERR) }
+        slStringsDictionary = dictionary as? Dictionary // converting to Dictionary so we can set types
+        translateSourceLanguage()
     }
-    
-    //if successful -> createNewDirectory()
+}
+
+func translateSourceLanguage() {
+    guard let _ = slStringsDictionary else { return }
+    tlStringsDictionary = [:]
+    for (key, value) in slStringsDictionary! {
+        translate(slKey: key, slText: value)
+    }
+    print(tlStringsDictionary! as Dictionary<String,String>)
+}
+
+func translate(slKey: String, slText: String) {
+    guard let escapedText = slText.stringByAddingPercentEncoding(),
+        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)") else { return }
+    print("translating: \(escapedText)")
+
+    let request = URLRequest(url: url)
+    URLSession.shared.dataTask(with: request) { data, _, error in
+        if let data = data,
+            let responseText: Array = String(data: data, encoding: .utf8)?.components(separatedBy: "\""),
+            responseText.count > 1 {
+            tlStringsDictionary?[slKey] = responseText[1]
+        } else {
+            print(error!.localizedDescription)
+            exit(EXIT_FAILURE)
+        }
+        sema.signal()
+    }.resume()
+    sema.wait()
 }
 
 func createNewDirectory() {
@@ -124,6 +147,13 @@ extension String {
     func appendToURL(fileURL: URL) throws {
         let data = self.data(using: String.Encoding.utf8)!
         try data.append(fileURL: fileURL)
+    }
+    
+    func stringByAddingPercentEncoding() -> String? {
+      let unreserved = "-._~/?"
+      let allowed = NSMutableCharacterSet.alphanumeric()
+      allowed.addCharacters(in: unreserved)
+      return addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)
     }
 }
 
