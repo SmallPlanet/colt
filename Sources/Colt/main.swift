@@ -12,8 +12,12 @@ let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
 
-let localURLSession = URLSession(configuration: URLSessionConfiguration.default)
 var sema = DispatchSemaphore( value: 0 )
+
+let systranHeaders = [
+    "x-rapidapi-host": "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
+    "x-rapidapi-key": "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d"
+]
 
 struct Translate: ParsableCommand {
 	@Argument()
@@ -64,7 +68,7 @@ func findStringsFiles() {
     
     if slStringsURL == nil {
         showError("Localization folder cannot be found. Please specify a valid source language")
-        // TODO: exit
+        exit(EX_IOERR)
     } else {
         parseSourceLanguageFile()
     }
@@ -72,7 +76,7 @@ func findStringsFiles() {
 
 func parseSourceLanguageFile() {
     if let stringsUrl = slStringsURL {
-        guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { print("failed"); exit(EX_DATAERR) }
+        guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { showError("Failed to create dictionary from strings file"); exit(EX_DATAERR) }
         slStringsDictionary = dictionary as? Dictionary // converting to Dictionary so we can set types
         translateSourceLanguage()
     }
@@ -82,19 +86,21 @@ func translateSourceLanguage() {
     guard let slStringsDictionary = slStringsDictionary else { return }
     tlStringsDictionary = [:]
     for (key, value) in slStringsDictionary {
-//        if let translatedText = translate(slText: value) {
-//            tlStringsDictionary?[key] = translatedText
-//        }
-        
-        let randomSeconds = Int.random(in: 1...3)
-        let randomMillisecond = Int.random(in: 0...1000)
-        DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(randomSeconds) + .milliseconds(randomMillisecond)){
-            if let translatedText = translate(slText: value) {
-                tlStringsDictionary?[key] = translatedText
-            }
-            sema.signal()
+        // ** WITHOUT DELAY **
+        if let translatedText = translate(slText: value) {
+            tlStringsDictionary?[key] = translatedText
         }
-        sema.wait()
+        
+        // ** WITH DELAY **
+//        let randomSeconds = Int.random(in: 1...3)
+//        let randomMillisecond = Int.random(in: 0...1000)
+//        DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(randomSeconds) + .milliseconds(randomMillisecond)){
+//            if let translatedText = translate(slText: value) {
+//                tlStringsDictionary?[key] = translatedText
+//            }
+//            sema.signal()
+//        }
+//        sema.wait()
     }
     print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary! as AnyObject)
     //exit(EX_OK) // TEMP
@@ -102,28 +108,29 @@ func translateSourceLanguage() {
 
 func translate(slText: String) -> String? {
     guard let escapedText = slText.stringByAddingPercentEncoding(),
-        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)") else { return nil }
+        let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return nil }
     print("translating: \(slText)")
-
-    let sessionConfiguration = URLSessionConfiguration.default
-    sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"]
-    //sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"]
-        
-    var translatedText: String?
-    let request = URLRequest(url: url)
-    let session = URLSession.init(configuration: sessionConfiguration)
+    var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
+    request.allHTTPHeaderFields = systranHeaders
     
-    session.dataTask(with: request) { data, response, error in
-        if let data = data,
-            let responseText: Array = String(data: data, encoding: .utf8)?.components(separatedBy: "\""),
-            responseText.count > 1 {
-            translatedText = responseText[1]
-            if translatedText?.contains("-//W3C//DTD HTML") ?? false {
-                print("*** BLOCKED ***")
-                exit(EXDEV)
+    var translatedText: String?
+    
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        if let data = data {
+            do{
+                let json = try JSONSerialization.jsonObject(with: data, options: [])
+                //print(json)
+                if let dict = json as? [String: Any],
+                    let outputs = dict["outputs"] as? [[String:Any]],
+                    let translation = outputs.first?["output"] as? String {
+                        translatedText = translation
+                }
+            } catch {
+                showError("json conversion failed")
             }
         } else if let response = response {
             print("response: \(response)")
+            exit(EXIT_FAILURE)
         } else {
             print(error!.localizedDescription)
             exit(EXIT_FAILURE)
@@ -133,6 +140,45 @@ func translate(slText: String) -> String? {
     sema.wait()
     return translatedText
 }
+
+
+
+// *** BOO-GGLE ***
+
+
+//func translate(slText: String) -> String? {
+//    guard let escapedText = slText.stringByAddingPercentEncoding(),
+//        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)") else { return nil }
+//    print("translating: \(slText)")
+//
+//    let sessionConfiguration = URLSessionConfiguration.default
+//    sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"]
+//    //sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"]
+//
+//    var translatedText: String?
+//    let request = URLRequest(url: url)
+//    let session = URLSession.init(configuration: sessionConfiguration)
+//
+//    session.dataTask(with: request) { data, response, error in
+//        if let data = data,
+//            let responseText: Array = String(data: data, encoding: .utf8)?.components(separatedBy: "\""),
+//            responseText.count > 1 {
+//            translatedText = responseText[1]
+//            if translatedText?.contains("-//W3C//DTD HTML") ?? false {
+//                print("*** BLOCKED ***")
+//                exit(EXDEV)
+//            }
+//        } else if let response = response {
+//            print("response: \(response)")
+//        } else {
+//            print(error!.localizedDescription)
+//            exit(EXIT_FAILURE)
+//        }
+//        sema.signal()
+//    }.resume()
+//    sema.wait()
+//    return translatedText
+//}
 
 
 
