@@ -4,27 +4,61 @@
  
  Created by Teju Prasad on 11/15/18.
  Copyright © 2018 Small Planet. All rights reserved.
-
- "Tabs.Priority" = "Priority";
- "Tabs.Plan" = "Call Plan";
- "Tabs.Me" = "Me";
  */
 
-
-"Tabs.Settings" = "Settings";
-"Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
+"Tabs.Priority" = "Priority";
+"Tabs.Plan" = "Call Plan";
+"Tabs.Me" = "Me";
 
 /*
+"Tabs.Settings" = "Settings";
+"Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
 "Login.AppName" = "ALLY";
 "Login.Username" = "Username";
 "Login.Password" = "Password";
 "Login.Button" = "Log In";
 "Login.Progress.Login" = "LOGGING IN";
-
 "Login.Progress.Migration" = "UPDATING DATA FORMAT";
 "Login.Error.Title" = "Login Failed";
 "Login.Error.Unknown" = "An unknown error occurred.";
 "Login.Error.Upgrade" = "Please upgrade to the latest version.";
+"AddToPlan.Title.Add" = "Add New Call";
+"AddToPlan.Title.Edit" = "Edit Existing Call";
+"AddToPlan.Button" = "Add to Plan";
+"AddToPlan.Done" = "Done";
+"AddToPlan.DoNotSpecify" = "No Specified Location";
+"AddToPlan.Discard.Title" = "Are you sure you want to exit?";
+"AddToPlan.DiscardAdd.Message" = "Exiting now will discard this call. To finish adding it to your plan, tap \"Done\" in the top right corner";
+"AddToPlan.DiscardEdit.Message" = "Exiting now will revert all changes to your call. Save your changes by tapping \"Done\" in the top right corner";
+"AddToPlan.Discard" = "Yes, Discard";
+"AddToPlan.Stay" = "No, Stay";
+
+"AddToPlan.Success.Add" = "You've successfully added an appointment!";
+"AddToPlan.Success.Edit" = "You've successfully updated an appointment!";
+"AddToPlan.Error.SameDay" = "You can only schedule one appointment per day with an HCP.";
+"AddToPlan.AddTime.Title" = "Set a Time";
+"AddToPlan.AddTime.Starts" = "Starts";
+"AddToPlan.AddTime.Ends" = "Ends";
+"AddToPlan.Repeat.Title" = "Repeat";
+"AddToPlan.Repeat.None" = "Never";
+"AddToPlan.Repeat.Weekly" = "Every Week";
+"AddToPlan.Repeat.Biweekly" = "Every 2 Weeks";
+"AddToPlan.Repeat.Monthly" = "Every Month";
+"AddToPlan.CallType" = "Call Type";
+"AddToPlan.Warning.Day" = "Heads up! This appointment is set for a time that may be outside of this location's visiting hours.";
+"AddToPlan.Warning.Hours" = "Heads up! This appointment is set for a time that may be outside of this location's visiting hours.";
+"AddToPlan.Cancel.New" = "Exiting now will discard this call. To finish adding it to your plan, tap 'Done' in the top right corner.";
+"AddToPlan.Cancel.Edit" = "Exiting now will revert all changes to your call. Save your changes by tapping 'Done' in the top right corner.";
+"Login.AppName" = "ALLY";
+"Login.Username" = "Username";
+"Login.Password" = "Password";
+"Login.Button" = "Log In";
+"Login.Progress.Login" = "LOGGING IN";
+"Login.Progress.Migration" = "UPDATING DATA FORMAT";
+"Login.Error.Title" = "Login Failed";
+"Login.Error.Unknown" = "An unknown error occurred.";
+"Login.Error.Upgrade" = "Please upgrade to the latest version.";
+
 
 "AddToPlan.Title.Add" = "Add New Call";
 "AddToPlan.Title.Edit" = "Edit Existing Call";
@@ -32,6 +66,7 @@
 "AddToPlan.Done" = "Done";
 "AddToPlan.DoNotSpecify" = "No Specified Location";
 "AddToPlan.Discard.Title" = "Are you sure you want to exit?";
+
 "AddToPlan.DiscardAdd.Message" = "Exiting now will discard this call. To finish adding it to your plan, tap \"Done\" in the top right corner";
 "AddToPlan.DiscardEdit.Message" = "Exiting now will revert all changes to your call. Save your changes by tapping \"Done\" in the top right corner";
 "AddToPlan.Discard" = "Yes, Discard";

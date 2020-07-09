@@ -29,6 +29,13 @@ struct Translate: ParsableCommand {
 	}
 }
 
+//var isRunning = false
+//let runLoop = RunLoop.current
+//while isRunning == true {
+//    print("waiting...")
+//    runLoop.run(until: Date.distantFuture)
+//}
+
 func startColt() {
     print("startColt: \(slCode) to \(tlCode)")
     guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
@@ -72,41 +79,51 @@ func parseSourceLanguageFile() {
 }
 
 func translateSourceLanguage() {
-    guard let _ = slStringsDictionary else { return }
+    guard let slStringsDictionary = slStringsDictionary else { return }
     tlStringsDictionary = [:]
-    for (key, value) in slStringsDictionary! {
-        translate(slKey: key, slText: value) // TODO: Chanage to this returning a value and add to tlStringsDictionary
+    for (key, value) in slStringsDictionary {
+//        if let translatedText = translate(slText: value) {
+//            tlStringsDictionary?[key] = translatedText
+//        }
+        
+        let randomSeconds = Int.random(in: 1...3)
+        let randomMillisecond = Int.random(in: 0...1000)
+        DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(randomSeconds) + .milliseconds(randomMillisecond)){
+            if let translatedText = translate(slText: value) {
+                tlStringsDictionary?[key] = translatedText
+            }
+            sema.signal()
+        }
+        sema.wait()
     }
-    print(tlStringsDictionary! as Dictionary<String,String>)
+    print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary! as AnyObject)
+    //exit(EX_OK) // TEMP
 }
 
-struct StringTranslation: Codable {
-    var orig: String
-    var trans: String
-}
-
-struct SentencesObj: Codable {
-    var sentence: Dictionary<String,String>
-}
-
-func translate(slKey: String, slText: String) {
+func translate(slText: String) -> String? {
     guard let escapedText = slText.stringByAddingPercentEncoding(),
-        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)&dj=1") else { return }
+        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)") else { return nil }
     print("translating: \(slText)")
 
+    let sessionConfiguration = URLSessionConfiguration.default
+    sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"]
+    //sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"]
+        
+    var translatedText: String?
     let request = URLRequest(url: url)
-    URLSession.shared.dataTask(with: request) { data, _, error in
+    let session = URLSession.init(configuration: sessionConfiguration)
+    
+    session.dataTask(with: request) { data, response, error in
         if let data = data,
             let responseText: Array = String(data: data, encoding: .utf8)?.components(separatedBy: "\""),
             responseText.count > 1 {
-            tlStringsDictionary?[slKey] = responseText[1] // TODO: Move up into translateSourceLanguage()
-            
-//            do {
-//                let product = try JSONDecoder().decode(SentencesObj.self, from: data)
-//                print(product)
-//            } catch {
-//                print("error")
-//            }
+            translatedText = responseText[1]
+            if translatedText?.contains("-//W3C//DTD HTML") ?? false {
+                print("*** BLOCKED ***")
+                exit(EXDEV)
+            }
+        } else if let response = response {
+            print("response: \(response)")
         } else {
             print(error!.localizedDescription)
             exit(EXIT_FAILURE)
@@ -114,7 +131,26 @@ func translate(slKey: String, slText: String) {
         sema.signal()
     }.resume()
     sema.wait()
+    return translatedText
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 func createNewDirectory() {
     //better way to back up 2 components?
