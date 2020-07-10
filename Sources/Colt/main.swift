@@ -14,9 +14,11 @@ var stringsFileHeader: String = ""
 
 var sema = DispatchSemaphore( value: 0 )
 
-let systranHeaders = [
+let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
+var rapid_api_key: String?
+var systranHeaders = [
     "x-rapidapi-host": "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
-    "x-rapidapi-key": "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d"
+    "x-rapidapi-key": ""
 ]
 
 struct Translate: ParsableCommand {
@@ -45,6 +47,15 @@ func startColt() {
     guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
     guard supportedLanguageCodes.contains(tlCode) else { showError("Translation language is not supported."); return }
     
+    let rapidApiKeyPath = URL(fileURLWithPath: localFileManager.currentDirectoryPath + "/rapid_api_key.txt")
+    do {
+        try rapid_api_key = String.init(contentsOf: rapidApiKeyPath)
+        systranHeaders["x-rapidapi-key"] = rapid_api_key
+    } catch {
+        showError("Missing Systran api key")
+        exit(EXDEV)
+    }
+    
     // TODO: Check for network
 
     //TODO: Finish the header
@@ -55,7 +66,6 @@ func startColt() {
 }
 
 func findStringsFiles() {
-    let currentDirectoryURL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
     let directoryEnumerator = localFileManager.enumerator(at: currentDirectoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
 
     while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
@@ -91,7 +101,7 @@ func translateSourceLanguage() {
         }
     }
     print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary! as AnyObject)
-    //exit(EX_OK) // TEMP
+    exit(EX_OK) // TEMP
 }
 
 func translate(slText: String) -> String? {
@@ -128,63 +138,6 @@ func translate(slText: String) -> String? {
     sema.wait()
     return translatedText
 }
-
-
-
-// *** BOO-GGLE ***
-
-
-//func translate(slText: String) -> String? {
-//    guard let escapedText = slText.stringByAddingPercentEncoding(),
-//        let url = URL(string: "https://translate.google.com/translate_a/single?client=gtx&sl=\(slCode)&tl=\(tlCode)&dt=t&q=\(escapedText)") else { return nil }
-//    print("translating: \(slText)")
-//
-//    let sessionConfiguration = URLSessionConfiguration.default
-//    sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"]
-//    //sessionConfiguration.httpAdditionalHeaders = ["User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"]
-//
-//    var translatedText: String?
-//    let request = URLRequest(url: url)
-//    let session = URLSession.init(configuration: sessionConfiguration)
-//
-//    session.dataTask(with: request) { data, response, error in
-//        if let data = data,
-//            let responseText: Array = String(data: data, encoding: .utf8)?.components(separatedBy: "\""),
-//            responseText.count > 1 {
-//            translatedText = responseText[1]
-//            if translatedText?.contains("-//W3C//DTD HTML") ?? false {
-//                print("*** BLOCKED ***")
-//                exit(EXDEV)
-//            }
-//        } else if let response = response {
-//            print("response: \(response)")
-//        } else {
-//            print(error!.localizedDescription)
-//            exit(EXIT_FAILURE)
-//        }
-//        sema.signal()
-//    }.resume()
-//    sema.wait()
-//    return translatedText
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 func createNewDirectory() {
     //better way to back up 2 components?
