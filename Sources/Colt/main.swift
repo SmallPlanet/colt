@@ -86,21 +86,9 @@ func translateSourceLanguage() {
     guard let slStringsDictionary = slStringsDictionary else { return }
     tlStringsDictionary = [:]
     for (key, value) in slStringsDictionary {
-        // ** WITHOUT DELAY **
         if let translatedText = translate(slText: value) {
             tlStringsDictionary?[key] = translatedText
         }
-        
-        // ** WITH DELAY **
-//        let randomSeconds = Int.random(in: 1...3)
-//        let randomMillisecond = Int.random(in: 0...1000)
-//        DispatchQueue.global().asyncAfter(deadline: .now() + .seconds(randomSeconds) + .milliseconds(randomMillisecond)){
-//            if let translatedText = translate(slText: value) {
-//                tlStringsDictionary?[key] = translatedText
-//            }
-//            sema.signal()
-//        }
-//        sema.wait()
     }
     print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary! as AnyObject)
     //exit(EX_OK) // TEMP
