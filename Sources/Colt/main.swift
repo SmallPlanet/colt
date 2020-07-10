@@ -6,15 +6,19 @@ var tlCode: String = ""
 var slStringsURL: URL?
 var tlStringsURL: URL?
 var slStringsDictionary: Dictionary<String, String>?
+var slStringsURLS: Dictionary<String, URL>?
 var tlStringsDictionary: Dictionary<String, String>?
 var slStrings: KeyValuePairs<String, String> = [:]
+
+
 let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
+let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
 
 var sema = DispatchSemaphore( value: 0 )
 
-let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
+// x-rapidapi-key will be supplied from a user created text file
 var rapid_api_key: String?
 var systranHeaders = [
     "x-rapidapi-host": "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
@@ -53,7 +57,7 @@ func startColt() {
         systranHeaders["x-rapidapi-key"] = rapid_api_key
     } catch {
         showError("Missing Systran api key")
-        exit(EXDEV)
+        exit(EXIT_FAILURE)
     }
     
     // TODO: Check for network
@@ -78,7 +82,7 @@ func findStringsFiles() {
     
     if slStringsURL == nil {
         showError("Localization folder cannot be found. Please specify a valid source language")
-        exit(EX_IOERR)
+        exit(EXIT_FAILURE)
     } else {
         parseSourceLanguageFile()
     }
@@ -100,7 +104,7 @@ func translateSourceLanguage() {
             tlStringsDictionary?[key] = translatedText
         }
     }
-    print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary! as AnyObject)
+    print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary!)
     exit(EX_OK) // TEMP
 }
 
@@ -121,7 +125,7 @@ func translate(slText: String) -> String? {
                 if let dict = json as? [String: Any],
                     let outputs = dict["outputs"] as? [[String:Any]],
                     let translation = outputs.first?["output"] as? String {
-                        translatedText = translation
+                    translatedText = translation
                 }
             } catch {
                 showError("json conversion failed")
