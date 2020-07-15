@@ -16,6 +16,7 @@ let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
 let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
 
+let dispatchGroup = DispatchGroup()
 //var sema = DispatchSemaphore( value: 0 )
 
 // x-rapidapi-key will be supplied from a user created text file
@@ -99,7 +100,6 @@ func translateSourceLanguage() {
         }
     }
     print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary!)
-    isRunning = false
     //exit(EX_OK) // TEMP
 }
 
