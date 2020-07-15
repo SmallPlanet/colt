@@ -16,7 +16,7 @@ let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
 let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
 
-var sema = DispatchSemaphore( value: 0 )
+//var sema = DispatchSemaphore( value: 0 )
 
 // x-rapidapi-key will be supplied from a user created text file
 var rapid_api_key: String?
@@ -39,13 +39,6 @@ struct Translate: ParsableCommand {
 	}
 }
 
-//var isRunning = false
-//let runLoop = RunLoop.current
-//while isRunning == true {
-//    print("waiting...")
-//    runLoop.run(until: Date.distantFuture)
-//}
-
 func startColt() {
     print("startColt: \(slCode) to \(tlCode)")
     guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
@@ -56,7 +49,8 @@ func startColt() {
         try rapid_api_key = String.init(contentsOf: rapidApiKeyPath)
         systranHeaders["x-rapidapi-key"] = rapid_api_key
     } catch {
-        showError("Missing Systran api key")
+        showError("API key not found. Using mine for debug")
+        systranHeaders["x-rapidapi-key"] = "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d"
         exit(EXIT_FAILURE)
     }
     
@@ -105,7 +99,8 @@ func translateSourceLanguage() {
         }
     }
     print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary!)
-    exit(EX_OK) // TEMP
+    isRunning = false
+    //exit(EX_OK) // TEMP
 }
 
 func translate(slText: String) -> String? {
@@ -137,9 +132,9 @@ func translate(slText: String) -> String? {
             print(error!.localizedDescription)
             exit(EXIT_FAILURE)
         }
-        sema.signal()
+        //sema.signal()
     }.resume()
-    sema.wait()
+    //sema.wait()
     return translatedText
 }
 
@@ -216,3 +211,4 @@ extension Data {
         }
     }
 }
+
