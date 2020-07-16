@@ -1,5 +1,6 @@
 import Foundation
 import ArgumentParser
+import Network
 
 var slCode: String = ""
 var tlCode: String = ""
@@ -17,7 +18,8 @@ var stringsFileHeader: String = ""
 let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
 
 let dispatchGroup = DispatchGroup()
-//var sema = DispatchSemaphore( value: 0 )
+
+
 
 // x-rapidapi-key will be supplied from a user created text file
 var rapid_api_key: String?
@@ -51,12 +53,30 @@ func startColt() {
         systranHeaders["x-rapidapi-key"] = rapid_api_key
     } catch {
         showError("API key not found. Using mine for debug")
-        systranHeaders["x-rapidapi-key"] = "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d"
+        systranHeaders["x-rapidapi-key"] = "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d" // TODO: REMOVE BEFORE RELEASE
         exit(EXIT_FAILURE)
     }
     
-    // TODO: Check for network
-
+    // Check for network
+    if #available(OSX 10.14, *) {
+        let monitor = NWPathMonitor()
+        dispatchGroup.enter()
+        monitor.pathUpdateHandler = { path in
+            print("path.status: \(path.status)")
+            if path.status != .satisfied {
+                showError("Please check your network connection.")
+            }
+            dispatchGroup.leave()
+        }
+        let queue = DispatchQueue(label: "Monitor")
+        monitor.start(queue: queue)
+        dispatchGroup.wait()
+        monitor.pathUpdateHandler = nil // remove after use?
+    } else {
+        showError("Colt only supports OSX 10.14+")
+        exit(EXIT_FAILURE)
+    }
+    
     //TODO: Finish the header
     //swiftlint:disable line_length
     stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
@@ -91,51 +111,48 @@ func parseSourceLanguageFile() {
     }
 }
 
+let sessionConfiguration = URLSessionConfiguration.default
+let session = URLSession(configuration: sessionConfiguration)
+
 func translateSourceLanguage() {
     guard let slStringsDictionary = slStringsDictionary else { return }
     tlStringsDictionary = [:]
-    for (key, value) in slStringsDictionary {
-        if let translatedText = translate(slText: value) {
-            tlStringsDictionary?[key] = translatedText
-        }
-    }
-    print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary!)
-    //exit(EX_OK) // TEMP
-}
-
-func translate(slText: String) -> String? {
-    guard let escapedText = slText.stringByAddingPercentEncoding(),
-        let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return nil }
-    print("translating: \(slText)")
-    var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
-    request.allHTTPHeaderFields = systranHeaders
     
-    var translatedText: String?
-    
-    URLSession.shared.dataTask(with: request) { data, response, error in
-        if let data = data {
-            do{
-                let json = try JSONSerialization.jsonObject(with: data, options: [])
-                //print(json)
-                if let dict = json as? [String: Any],
-                    let outputs = dict["outputs"] as? [[String:Any]],
-                    let translation = outputs.first?["output"] as? String {
-                    translatedText = translation
+    slStringsDictionary.forEach { slDict in
+        let slText = slDict.value
+        guard let escapedText = slText.stringByAddingPercentEncoding(),
+            let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
+        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
+        request.allHTTPHeaderFields = systranHeaders
+        
+        dispatchGroup.enter()
+        session.dataTask(with: request, completionHandler: { (data, response, error) in
+            if let data = data {
+                //TODO: Move json parsing to
+                do{
+                    let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    //print(json)
+                    if let dict = json as? [String: Any],
+                        let outputs = dict["outputs"] as? [[String:Any]],
+                        let translation = outputs.first?["output"] as? String {
+                        tlStringsDictionary?[slDict.key] = translation
+                    }
+                } catch {
+                    showError("json conversion failed")
                 }
-            } catch {
-                showError("json conversion failed")
+            } else if let response = response {
+                print("response: \(response)")
+                exit(EXIT_FAILURE)
+            } else {
+                print(error!.localizedDescription)
+                exit(EXIT_FAILURE)
             }
-        } else if let response = response {
-            print("response: \(response)")
-            exit(EXIT_FAILURE)
-        } else {
-            print(error!.localizedDescription)
-            exit(EXIT_FAILURE)
-        }
-        //sema.signal()
-    }.resume()
-    //sema.wait()
-    return translatedText
+            dispatchGroup.leave()
+        }).resume()
+    }
+    
+    dispatchGroup.wait()
+    print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary!)
 }
 
 func createNewDirectory() {
