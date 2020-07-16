@@ -1,8 +1,4 @@
-/*
-This file was translated using Colt on 2020-06-18 16:27:49 +0000
-https://github.com/mmwwwhahaha/colt
-Source language: en
-Translated to: es
-*/
-
-Strings go here
+"Tabs.Plan" = "Plan de la llamada";
+"Tabs.Me" = "Yo";
+"Tabs.Priority" = "Prioridad";
+"LogCall.SuccessAlert.Title" = "\U00a1GRACIAS!";

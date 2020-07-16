@@ -128,13 +128,15 @@ func translateSourceLanguage() {
         dispatchGroup.enter()
         session.dataTask(with: request, completionHandler: { (data, response, error) in
             if let data = data {
-                //TODO: Move json parsing to
                 do{
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
-                    //print(json)
                     if let dict = json as? [String: Any],
                         let outputs = dict["outputs"] as? [[String:Any]],
                         let translation = outputs.first?["output"] as? String {
+                            
+                        // NOPE: String(describing: translation.cString(using: String.Encoding.utf8))
+                            // Optional([80, 114, 105, 111, 114, 105, 100, 97, 100, 0])
+                        
                         tlStringsDictionary?[slDict.key] = translation
                     }
                 } catch {
@@ -153,6 +155,7 @@ func translateSourceLanguage() {
     
     dispatchGroup.wait()
     print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary!)
+    createNewDirectory()
 }
 
 func createNewDirectory() {
@@ -172,7 +175,9 @@ func createNewStringsFile(folderUrl: URL) {
     guard tlStringsURL != nil else { return }
     do {
         try stringsFileHeader.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
-        try "\n\nStrings go here".appendLineToURL(fileURL: tlStringsURL!)
+        if #available(OSX 10.13, *) {
+            try NSDictionary(dictionary: tlStringsDictionary!).descriptionInStringsFileFormat.write(to: tlStringsURL!, atomically: true, encoding: .utf8)
+        }
     } catch {
         print("could not create .strings file")
     }
@@ -198,7 +203,7 @@ Translate.main()
 //TODO: Move to Extensions file
 
 extension String {
-   func appendLineToURL(fileURL: URL) throws {
+    func appendLineToURL(fileURL: URL) throws {
         try (self + "\n").appendToURL(fileURL: fileURL)
     }
 
