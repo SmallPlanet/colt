@@ -129,6 +129,7 @@ func translateSourceLanguage() {
         session.dataTask(with: request, completionHandler: { (data, response, error) in
             if let data = data {
                 do{
+                    
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
                     if let dict = json as? [String: Any],
                         let outputs = dict["outputs"] as? [[String:Any]],
@@ -176,13 +177,12 @@ func createNewStringsFile(folderUrl: URL) {
     do {
         try stringsFileHeader.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
         if #available(OSX 10.13, *) {
-            try NSDictionary(dictionary: tlStringsDictionary!).descriptionInStringsFileFormat.write(to: tlStringsURL!, atomically: true, encoding: .utf8)
+            try NSDictionary(dictionary: tlStringsDictionary!).descriptionInStringsFileFormat.write(to: tlStringsURL!, atomically: true, encoding: .utf16)
         }
     } catch {
         print("could not create .strings file")
     }
 }
-
 
 //
 //func copyStringsFile(to: URL, source: URL) {
