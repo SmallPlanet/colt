@@ -1,0 +1,186 @@
+/*
+ Localizable.strings
+ Alyvant
+ 
+ Created by Teju Prasad on 11/15/18.
+ Copyright © 2018 Small Planet. All rights reserved.
+ */
+
+"Tabs.Priority" = "Priority";
+"Tabs.Plan" = "Call Plan";
+"Tabs.Me" = "Me";
+"LogCall.SuccessAlert.Title" = "THANKS!";
+
+
+"Tabs.Settings" = "Settings";
+"Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
+"Login.AppName" = "ALLY";
+"Login.Username" = "Username";
+"Login.Password" = "Password";
+"Login.Button" = "Log In";
+"Login.Progress.Login" = "LOGGING IN";
+"Login.Progress.Migration" = "UPDATING DATA FORMAT";
+"Login.Error.Title" = "Login Failed";
+"Login.Error.Unknown" = "An unknown error occurred.";
+"Login.Error.Upgrade" = "Please upgrade to the latest version.";
+"AddToPlan.Title.Add" = "Add New Call";
+"AddToPlan.Title.Edit" = "Edit Existing Call";
+"AddToPlan.Button" = "Add to Plan";
+"AddToPlan.Done" = "Done";
+"AddToPlan.DoNotSpecify" = "No Specified Location";
+"AddToPlan.Discard.Title" = "Are you sure you want to exit?";
+"AddToPlan.DiscardAdd.Message" = "Exiting now will discard this call. To finish adding it to your plan, tap \"Done\" in the top right corner";
+"AddToPlan.DiscardEdit.Message" = "Exiting now will revert all changes to your call. Save your changes by tapping \"Done\" in the top right corner";
+"AddToPlan.Discard" = "Yes, Discard";
+"AddToPlan.Stay" = "No, Stay";
+/*
+"AddToPlan.Success.Add" = "You've successfully added an appointment!";
+"AddToPlan.Success.Edit" = "You've successfully updated an appointment!";
+"AddToPlan.Error.SameDay" = "You can only schedule one appointment per day with an HCP.";
+"AddToPlan.AddTime.Title" = "Set a Time";
+"AddToPlan.AddTime.Starts" = "Starts";
+"AddToPlan.AddTime.Ends" = "Ends";
+"AddToPlan.Repeat.Title" = "Repeat";
+"AddToPlan.Repeat.None" = "Never";
+"AddToPlan.Repeat.Weekly" = "Every Week";
+"AddToPlan.Repeat.Biweekly" = "Every 2 Weeks";
+"AddToPlan.Repeat.Monthly" = "Every Month";
+"AddToPlan.CallType" = "Call Type";
+"AddToPlan.Warning.Day" = "Heads up! This appointment is set for a time that may be outside of this location's visiting hours.";
+"AddToPlan.Warning.Hours" = "Heads up! This appointment is set for a time that may be outside of this location's visiting hours.";
+"AddToPlan.Cancel.New" = "Exiting now will discard this call. To finish adding it to your plan, tap 'Done' in the top right corner.";
+"AddToPlan.Cancel.Edit" = "Exiting now will revert all changes to your call. Save your changes by tapping 'Done' in the top right corner.";
+"Login.AppName" = "ALLY";
+"Login.Username" = "Username";
+"Login.Password" = "Password";
+"Login.Button" = "Log In";
+"Login.Progress.Login" = "LOGGING IN";
+"Login.Progress.Migration" = "UPDATING DATA FORMAT";
+"Login.Error.Title" = "Login Failed";
+"Login.Error.Unknown" = "An unknown error occurred.";
+"Login.Error.Upgrade" = "Please upgrade to the latest version.";
+
+
+"AddToPlan.Title.Add" = "Add New Call";
+"AddToPlan.Title.Edit" = "Edit Existing Call";
+"AddToPlan.Button" = "Add to Plan";
+"AddToPlan.Done" = "Done";
+"AddToPlan.DoNotSpecify" = "No Specified Location";
+"AddToPlan.Discard.Title" = "Are you sure you want to exit?";
+
+"AddToPlan.DiscardAdd.Message" = "Exiting now will discard this call. To finish adding it to your plan, tap \"Done\" in the top right corner";
+"AddToPlan.DiscardEdit.Message" = "Exiting now will revert all changes to your call. Save your changes by tapping \"Done\" in the top right corner";
+"AddToPlan.Discard" = "Yes, Discard";
+"AddToPlan.Stay" = "No, Stay";
+"AddToPlan.Success.Add" = "You've successfully added an appointment!";
+"AddToPlan.Success.Edit" = "You've successfully updated an appointment!";
+"AddToPlan.Error.SameDay" = "You can only schedule one appointment per day with an HCP.";
+"AddToPlan.AddTime.Title" = "Set a Time";
+"AddToPlan.AddTime.Starts" = "Starts";
+"AddToPlan.AddTime.Ends" = "Ends";
+"AddToPlan.Repeat.Title" = "Repeat";
+"AddToPlan.Repeat.None" = "Never";
+"AddToPlan.Repeat.Weekly" = "Every Week";
+"AddToPlan.Repeat.Biweekly" = "Every 2 Weeks";
+"AddToPlan.Repeat.Monthly" = "Every Month";
+"AddToPlan.CallType" = "Call Type";
+"AddToPlan.Warning.Day" = "Heads up! This appointment is set for a time that may be outside of this location's visiting hours.";
+"AddToPlan.Warning.Hours" = "Heads up! This appointment is set for a time that may be outside of this location's visiting hours.";
+"AddToPlan.Cancel.New" = "Exiting now will discard this call. To finish adding it to your plan, tap 'Done' in the top right corner.";
+"AddToPlan.Cancel.Edit" = "Exiting now will revert all changes to your call. Save your changes by tapping 'Done' in the top right corner.";
+
+"Appointments.Title" = "Calls with this HCP";
+"Appointments.Add" = "Add New Call";
+
+"Priority.Title" = "Today's Priority";
+"Priority.MultipleLocations" = "Multiple Locations";
+"Priority.NextPlannedCall" = "Next Planned Call";
+"Priority.NoResults.Title" = "NO RESULTS FOUND";
+"Priority.NoResults.Body" = "Check your spelling or try a new search term.";
+"Priority.Map.Search" = "See HCPs in This Area";
+"Priority.Map.Empty" = "There are no HCPs on your priority list in this area.";
+"Priority.Map.NoCalls" = "No planned calls with this HCP.";
+
+"Profile.Title" = "HCP Profile";
+"Profile.Products.Title" = "PRODUCTS";
+"Profile.Products.Attachment" = "View Attachment >";
+"Profile.Insights.Title" = "INSIGHTS";
+"Profile.Insights.Attachment" = "View Attachment >";
+"Profile.CallLog.Title" = "CALL HISTORY";
+"Profile.CallLog.AddButton" = "Log Call";
+"Profile.CallLog.HistoryButton" = "View Call History";
+"Profile.CallLog.NextCallPrefix" = "Your last call with this HCP was on";
+"Profile.CallLog.NoPlanned" = "You have not logged any calls with this HCP.";
+"Profile.PatientInfo.Title" = "PATIENT INFORMATION";
+"Profile.PhysicianInfo.Title" = "PHYSICIAN INFORMATION";
+"Profile.Training.Title" = "Education & Training";
+"Profile.Affiliations.Title" = "Hospital Affiliations";
+"Profile.Address" = "Address";
+"Profile.VisitingHours" = "Visiting Hours";
+"Profile.Directions" = "Directions";
+"Profile.OfficeStaff" = "View Office Staff";
+"Profile.Website" = "Website";
+"Profile.PhoneNumber" = "Phone Number";
+
+"PreviousLog.Title" = "Call Log";
+"PreviousLog.Empty" = "You have not logged any calls yet.";
+
+"Plan.SegmentedControl.Day" = "DAY";
+"Plan.SegmentedControl.Week" = "WEEK";
+"Plan.Week.Empty" = "No calls have been planned for this week.";
+"Plan.Week.EmptySection" = "No calls planned.";
+"Plan.Week.Edit" = "Edit";
+"Plan.Week.Delete" = "Remove";
+"Plan.Day.NoAppointment" = "Address & appointment time not specified";
+"Plan.Day.LogCall" = "Log Call";
+"Plan.Day.Completed" = "Completed";
+"Plan.Day.Flagged" = "Flagged";
+"Plan.Day.Empty" = "No calls have been planned for this day.";
+"Plan.Day.Cancel" = "Cancel";
+"Plan.Day.SelectLocation" = "SELECT LOCATION";
+"Plan.Day.Nearby" = "Other HCPs Near Me";
+"Plan.Day.NearbyCell" = "HCP Near Me";
+"Plan.Day.AddToPlan" = "Add to Plan";
+"Plan.Day.SampleDrop" = "Sample Drop";
+"Plan.Repeating.Edit.Title" = "Edit this repeating call?";
+"Plan.Repeating.Edit.Message" = "Any edits will affect the current and all future instances of this call.";
+"Plan.Repeating.Delete.Title" = "Deleting this repeating call?";
+"Plan.Repeating.Delete.Message" = "This will remove the current and all future instances of this call";
+"Plan.Repeating.Alert.Cancel" = "Cancel";
+"Plan.Repeating.Alert.Delete" = "Delete";
+"Plan.Repeating.Alert.Continue" = "Continue";
+
+"LogCall.Title" = "Log Call";
+"LogCall.Cancel" = "Cancel";
+"LogCall.Submit" = "SUBMIT";
+
+"LogCall.SuccessAlert.Message" = "Your call has been successfully logged.";
+"LogCall.SuccessAlert.Dismiss" = "Close";
+
+"Me.Title" = "My Performance";
+"Me.Priority.High" = "High Priority";
+"Me.Priority.Medium" = "Medium Priority";
+"Me.Priority.Low" = "Low Priority";
+"Me.RelationshipHealth.Title" = "OVERALL RELATIONSHIP HEALTH";
+"Me.RelationshipHealth.NoRank" = "N/A";
+"Me.RelationshipHealth.TopDoctors" = "YOUR TOP 3 RELATIONSHIPS";
+
+"Settings.Title" = "Settings";
+"Settings.AppData.AppVersion" = "Version";
+"Settings.AppData.BuildNumber" = "Build";
+"Settings.LogoutAlert.Title" = "Log Out";
+"Settings.LogoutAlert.Message" = "Are you sure you want to log out of the Alyvant app?";
+"Settings.LogoutAlert.OKTitle" = "Log Out";
+"Settings.LogoutAlert.CancelTitle" = "Cancel";
+
+"LocationServices.Description" = "You need to enable location services on this app in order to see nearby doctors and log calls.";
+"LocationServices.Alert.Title" = "Location Access Needed";
+"LocationServices.Alert.Message" = "Please enable Location Services in Settings.";
+"LocationServices.Alert.CancelTitle" = "Cancel";
+"LocationServices.Alert.SettingsTitle" = "Settings";
+
+"Shared.Relationship" = "Relationship";
+"Shared.Today" = "TODAY";
+"Shared.OK" = "OK";
+
+*/

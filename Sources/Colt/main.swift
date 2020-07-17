@@ -4,6 +4,9 @@ import Network
 
 var slCode: String = ""
 var tlCode: String = ""
+var currentSlIndex: Int = 0
+var slStringsURLs: [URL] = []
+var slStringsFileName: String?
 var slStringsURL: URL?
 var tlStringsURL: URL?
 var slStringsDictionary: Dictionary<String, String>?
@@ -62,7 +65,6 @@ func startColt() {
         let monitor = NWPathMonitor()
         dispatchGroup.enter()
         monitor.pathUpdateHandler = { path in
-            print("path.status: \(path.status)")
             if path.status != .satisfied {
                 showError("Please check your network connection.")
             }
@@ -79,7 +81,7 @@ func startColt() {
     
     //TODO: Finish the header
     //swiftlint:disable line_length
-    stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
+    stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n\n*/"
 
     findStringsFiles()
 }
@@ -89,13 +91,13 @@ func findStringsFiles() {
 
     while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
         if fileURL.absoluteString.contains("\(slCode).lproj") && fileURL.absoluteString.contains(".strings") {
-            slStringsURL = fileURL
+            slStringsURLs.append(fileURL)
         } else if fileURL.absoluteString.contains("\(tlCode).lproj") && fileURL.absoluteString.contains(".strings") {
             tlStringsURL = fileURL
         }
     }
     
-    if slStringsURL == nil {
+    if slStringsURLs.count == 0 {
         showError("Localization folder cannot be found. Please specify a valid source language")
         exit(EXIT_FAILURE)
     } else {
@@ -104,6 +106,8 @@ func findStringsFiles() {
 }
 
 func parseSourceLanguageFile() {
+    slStringsURL = slStringsURLs[currentSlIndex]
+    slStringsFileName = slStringsURL?.lastPathComponent
     if let stringsUrl = slStringsURL {
         guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { showError("Failed to create dictionary from strings file"); exit(EX_DATAERR) }
         slStringsDictionary = dictionary as? Dictionary // converting to Dictionary so we can set types
@@ -134,10 +138,6 @@ func translateSourceLanguage() {
                     if let dict = json as? [String: Any],
                         let outputs = dict["outputs"] as? [[String:Any]],
                         let translation = outputs.first?["output"] as? String {
-                            
-                        // NOPE: String(describing: translation.cString(using: String.Encoding.utf8))
-                            // Optional([80, 114, 105, 111, 114, 105, 100, 97, 100, 0])
-                        
                         tlStringsDictionary?[slDict.key] = translation
                     }
                 } catch {
@@ -172,7 +172,7 @@ func createNewDirectory() {
 }
 
 func createNewStringsFile(folderUrl: URL) {
-    tlStringsURL = folderUrl.appendingPathComponent("Localizable.strings", isDirectory: false)
+    tlStringsURL = folderUrl.appendingPathComponent(slStringsFileName ?? "Localizable.strings", isDirectory: false)
     guard tlStringsURL != nil else { return }
     do {
         try stringsFileHeader.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
@@ -181,6 +181,13 @@ func createNewStringsFile(folderUrl: URL) {
         }
     } catch {
         print("could not create .strings file")
+    }
+    
+    if currentSlIndex < slStringsURLs.count - 1 {
+        currentSlIndex += 1
+        parseSourceLanguageFile()
+    } else {
+        exit(EXIT_SUCCESS)
     }
 }
 
