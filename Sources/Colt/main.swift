@@ -13,6 +13,7 @@ var slStringsDictionary: Dictionary<String, String>?
 var slStringsURLS: Dictionary<String, URL>?
 var tlStringsDictionary: Dictionary<String, String>?
 var slStrings: KeyValuePairs<String, String> = [:]
+var translationFailures: [String] = []
 
 
 let localFileManager = FileManager()
@@ -124,9 +125,10 @@ func translateSourceLanguage() {
     
     slStringsDictionary.forEach { slDict in
         let slText = slDict.value
+        print("Translating: \(slText)")
         guard let escapedText = slText.stringByAddingPercentEncoding(),
             let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
-        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
+        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30.0)
         request.allHTTPHeaderFields = systranHeaders
         
         dispatchGroup.enter()
@@ -145,17 +147,17 @@ func translateSourceLanguage() {
                 }
             } else if let response = response {
                 print("response: \(response)")
-                exit(EXIT_FAILURE)
+                translationFailures.append(slText)
             } else {
                 print(error!.localizedDescription)
-                exit(EXIT_FAILURE)
+                translationFailures.append(slText)
             }
             dispatchGroup.leave()
         }).resume()
     }
     
     dispatchGroup.wait()
-    print(String(tlStringsDictionary?.count ?? 0) + " items.\n", tlStringsDictionary!)
+    print(String(tlStringsDictionary?.count ?? 0) + " items.\n\(translationFailures.count) failures.\n", tlStringsDictionary!)
     createNewDirectory()
 }
 

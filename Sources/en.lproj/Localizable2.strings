@@ -6,12 +6,18 @@
  Copyright © 2018 Small Planet. All rights reserved.
  */
 
-"Tabs.Priority" = "Priority";
-"Tabs.Plan" = "Call Plan";
-"Tabs.Me" = "Me";
-"LogCall.SuccessAlert.Title" = "THANKS!";
+"AddToPlan.Title.Add" = "Add New Call";
+"AddToPlan.Title.Edit" = "Edit Existing Call";
+"AddToPlan.Button" = "Add to Plan";
+"AddToPlan.Done" = "Done";
 
-
+/*
+ 
+ "Tabs.Priority" = "Priority";
+ "Tabs.Plan" = "Call Plan";
+ "Tabs.Me" = "Me";
+ "LogCall.SuccessAlert.Title" = "THANKS!";
+ 
 "Tabs.Settings" = "Settings";
 "Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
 "Login.AppName" = "ALLY";
@@ -33,7 +39,7 @@
 "AddToPlan.DiscardEdit.Message" = "Exiting now will revert all changes to your call. Save your changes by tapping \"Done\" in the top right corner";
 "AddToPlan.Discard" = "Yes, Discard";
 "AddToPlan.Stay" = "No, Stay";
-/*
+
 "AddToPlan.Success.Add" = "You've successfully added an appointment!";
 "AddToPlan.Success.Edit" = "You've successfully updated an appointment!";
 "AddToPlan.Error.SameDay" = "You can only schedule one appointment per day with an HCP.";
