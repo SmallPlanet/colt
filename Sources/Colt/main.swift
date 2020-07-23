@@ -1,6 +1,7 @@
 import Foundation
 import ArgumentParser
 import Network
+import Progress
 
 var slCode: String = ""
 var tlCode: String = ""
@@ -15,7 +16,6 @@ var tlStringsDictionary: Dictionary<String, String>?
 var slStrings: KeyValuePairs<String, String> = [:]
 var translationFailures: [String] = []
 
-
 let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
@@ -23,9 +23,7 @@ let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDire
 
 let dispatchGroup = DispatchGroup()
 
-
-
-// x-rapidapi-key will be supplied from a user created text file
+// x-rapidapi-key will be supplied by the user
 var rapid_api_key: String?
 var systranHeaders = [
     "x-rapidapi-host": "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
@@ -51,14 +49,20 @@ func startColt() {
     guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
     guard supportedLanguageCodes.contains(tlCode) else { showError("Translation language is not supported."); return }
     
+    // only working within xcode at the moment
+//    let apiKey = ProcessInfo.processInfo.environment["RAPIDAPI_KEY"] // ⚠️ only works in Xcode
+//    print(apiKey)
+//    
+//    return
+        
+    // look in home directory and use a .hidden file (.colt) - can be used with multiple projects
     let rapidApiKeyPath = URL(fileURLWithPath: localFileManager.currentDirectoryPath + "/rapid_api_key.txt")
     do {
         try rapid_api_key = String.init(contentsOf: rapidApiKeyPath)
         systranHeaders["x-rapidapi-key"] = rapid_api_key
     } catch {
-        showError("API key not found. Using mine for debug")
-        systranHeaders["x-rapidapi-key"] = "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d" // TODO: REMOVE BEFORE RELEASE
-        exit(EXIT_FAILURE)
+        systranHeaders["x-rapidapi-key"] = "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d" // TODO: REMOVE BEFORE RELEASE. TEMP FOR RUNNING IN XCODE
+        //showError("RapidAPI key not found") // TODO: UNCOMMENT BEFORE RELEASE
     }
     
     // Check for network
@@ -76,13 +80,14 @@ func startColt() {
         dispatchGroup.wait()
         monitor.pathUpdateHandler = nil // remove after use?
     } else {
+        // just let 'em through
         showError("Colt only supports OSX 10.14+")
         exit(EXIT_FAILURE)
     }
     
     //TODO: Finish the header
     //swiftlint:disable line_length
-    stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n\n*/"
+    stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
 
     findStringsFiles()
 }
@@ -110,6 +115,8 @@ func parseSourceLanguageFile() {
     slStringsURL = slStringsURLs[currentSlIndex]
     slStringsFileName = slStringsURL?.lastPathComponent
     if let stringsUrl = slStringsURL {
+        // is there another solution where I can use Dictionary?
+        // string - property list from strings file format
         guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { showError("Failed to create dictionary from strings file"); exit(EX_DATAERR) }
         slStringsDictionary = dictionary as? Dictionary // converting to Dictionary so we can set types
         translateSourceLanguage()
@@ -123,6 +130,8 @@ func translateSourceLanguage() {
     guard let slStringsDictionary = slStringsDictionary else { return }
     tlStringsDictionary = [:]
     
+    var progressBar = ProgressBar(count: slStringsDictionary.count)
+    
     slStringsDictionary.forEach { slDict in
         let slText = slDict.value
         print("Translating: \(slText)")
@@ -133,9 +142,9 @@ func translateSourceLanguage() {
         
         dispatchGroup.enter()
         session.dataTask(with: request, completionHandler: { (data, response, error) in
+            progressBar.next()
             if let data = data {
                 do{
-                    
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
                     if let dict = json as? [String: Any],
                         let outputs = dict["outputs"] as? [[String:Any]],
@@ -143,7 +152,7 @@ func translateSourceLanguage() {
                         tlStringsDictionary?[slDict.key] = translation
                     }
                 } catch {
-                    showError("json conversion failed")
+                    showError("Failed to parse source strings file")
                 }
             } else if let response = response {
                 print("response: \(response)")
@@ -157,12 +166,14 @@ func translateSourceLanguage() {
     }
     
     dispatchGroup.wait()
-    print(String(tlStringsDictionary?.count ?? 0) + " items.\n\(translationFailures.count) failures.\n", tlStringsDictionary!)
+    progressBar.next() // why do I need this one to complete?
+    print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary!)
     createNewDirectory()
 }
 
 func createNewDirectory() {
-    //better way to back up 2 components?
+    //TODO: Better way to guarantee this directory is ok
+    // Support multiple directory structures
     guard let targetURL = slStringsURL?.deletingLastPathComponent().deletingLastPathComponent() else { print("no parent directory"); return }
     let tlFolderUrl = targetURL.appendingPathComponent("\(tlCode).lproj", isDirectory: true)
     do {
@@ -177,12 +188,10 @@ func createNewStringsFile(folderUrl: URL) {
     tlStringsURL = folderUrl.appendingPathComponent(slStringsFileName ?? "Localizable.strings", isDirectory: false)
     guard tlStringsURL != nil else { return }
     do {
-        try stringsFileHeader.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
-        if #available(OSX 10.13, *) {
-            try NSDictionary(dictionary: tlStringsDictionary!).descriptionInStringsFileFormat.write(to: tlStringsURL!, atomically: true, encoding: .utf16)
-        }
+        let stringToWrite = stringsFileHeader + "\n\n" + NSDictionary(dictionary: tlStringsDictionary!).descriptionInStringsFileFormat // is this my unicode nemesis?
+        try stringToWrite.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
     } catch {
-        print("could not create .strings file")
+        showError("Was unable to create or write to strings file")
     }
     
     if currentSlIndex < slStringsURLs.count - 1 {
@@ -195,7 +204,13 @@ func createNewStringsFile(folderUrl: URL) {
 
 func showError(_ error: String) {
     print(error)
-    exit(EXIT_FAILURE)
+    if currentSlIndex < slStringsURLs.count - 1 {
+        print("Skipping file at \(slStringsURLs[currentSlIndex])")
+        currentSlIndex += 1
+        parseSourceLanguageFile()
+    } else {
+        exit(EXIT_FAILURE)
+    }
 }
 
 Translate.main()

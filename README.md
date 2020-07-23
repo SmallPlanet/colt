@@ -2,4 +2,4 @@
 
 *** This project is currently in progress. ***
 
-When finished, it will translate .strings files within Xcode projects using the Google Translate API.
+A automated tool for translating strings files.

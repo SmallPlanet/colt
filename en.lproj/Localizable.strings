@@ -11,10 +11,10 @@
 "Tabs.Me" = "Me";
 "LogCall.SuccessAlert.Title" = "THANKS!";
 
-/*
 "Tabs.Settings" = "Settings";
 "Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
 "Login.AppName" = "ALLY";
+/*
 "Login.Username" = "Username";
 "Login.Password" = "Password";
 "Login.Button" = "Log In";
