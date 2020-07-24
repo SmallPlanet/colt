@@ -14,7 +14,7 @@ var slStringsDictionary: Dictionary<String, String>?
 var slStringsURLS: Dictionary<String, URL>?
 var tlStringsDictionary: Dictionary<String, String>?
 var slStrings: KeyValuePairs<String, String> = [:]
-var translationFailures: [String] = []
+var translationFailures: Dictionary<String, String>?
 
 let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
@@ -49,10 +49,9 @@ func startColt() {
     guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
     guard supportedLanguageCodes.contains(tlCode) else { showError("Translation language is not supported."); return }
     
-    // only working within xcode at the moment
-//    let apiKey = ProcessInfo.processInfo.environment["RAPIDAPI_KEY"] // ⚠️ only works in Xcode
+//    let apiKey = ProcessInfo.processInfo.environment["RAPIDAPI_KEY"]
 //    print(apiKey)
-//    
+//
 //    return
         
     // look in home directory and use a .hidden file (.colt) - can be used with multiple projects
@@ -112,6 +111,7 @@ func findStringsFiles() {
 }
 
 func parseSourceLanguageFile() {
+    translationFailures = [:]
     slStringsURL = slStringsURLs[currentSlIndex]
     slStringsFileName = slStringsURL?.lastPathComponent
     if let stringsUrl = slStringsURL {
@@ -130,7 +130,8 @@ func translateSourceLanguage() {
     guard let slStringsDictionary = slStringsDictionary else { return }
     tlStringsDictionary = [:]
     
-    var progressBar = ProgressBar(count: slStringsDictionary.count)
+    var progressBar = ProgressBar(count: slStringsDictionary.count - 1)
+    var itemcount = 0
     
     slStringsDictionary.forEach { slDict in
         let slText = slDict.value
@@ -142,6 +143,7 @@ func translateSourceLanguage() {
         
         dispatchGroup.enter()
         session.dataTask(with: request, completionHandler: { (data, response, error) in
+            itemcount += 1
             progressBar.next()
             if let data = data {
                 do{
@@ -155,19 +157,18 @@ func translateSourceLanguage() {
                     showError("Failed to parse source strings file")
                 }
             } else if let response = response {
+                translationFailures?[slDict.key] = slDict.value
                 print("response: \(response)")
-                translationFailures.append(slText)
             } else {
-                print(error!.localizedDescription)
-                translationFailures.append(slText)
+                translationFailures?[slDict.key] = slDict.value
+                print("error: \(error!.localizedDescription)")
             }
             dispatchGroup.leave()
         }).resume()
     }
     
     dispatchGroup.wait()
-    progressBar.next() // why do I need this one to complete?
-    print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary!)
+    print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures?.count ?? 0) failures.\n", tlStringsDictionary!)
     createNewDirectory()
 }
 
