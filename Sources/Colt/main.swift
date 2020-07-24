@@ -53,7 +53,7 @@ func startColt() {
 //    print(apiKey)
 //
 //    return
-        
+            
     // look in home directory and use a .hidden file (.colt) - can be used with multiple projects
     let rapidApiKeyPath = URL(fileURLWithPath: localFileManager.currentDirectoryPath + "/rapid_api_key.txt")
     do {
@@ -64,7 +64,7 @@ func startColt() {
         //showError("RapidAPI key not found") // TODO: UNCOMMENT BEFORE RELEASE
     }
     
-    // Check for network
+    // Check for network if OS is above 10.14
     if #available(OSX 10.14, *) {
         let monitor = NWPathMonitor()
         dispatchGroup.enter()
@@ -78,10 +78,6 @@ func startColt() {
         monitor.start(queue: queue)
         dispatchGroup.wait()
         monitor.pathUpdateHandler = nil // remove after use?
-    } else {
-        // just let 'em through
-        showError("Colt only supports OSX 10.14+")
-        exit(EXIT_FAILURE)
     }
     
     //TODO: Finish the header
