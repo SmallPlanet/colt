@@ -14,7 +14,7 @@ var slStringsDictionary: Dictionary<String, String>?
 var slStringsURLS: Dictionary<String, URL>?
 var tlStringsDictionary: Dictionary<String, String>?
 var slStrings: KeyValuePairs<String, String> = [:]
-var translationFailures: Dictionary<String, String>?
+var translationFailures: Dictionary<String, String> = [:]
 
 let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
@@ -153,10 +153,11 @@ func translateSourceLanguage() {
                     showError("Failed to parse source strings file")
                 }
             } else if let response = response {
-                translationFailures?[slDict.key] = slDict.value
+                
+                translationFailures[slDict.key] = slDict.value
                 print("response: \(response)")
             } else {
-                translationFailures?[slDict.key] = slDict.value
+                translationFailures[slDict.key] = slDict.value
                 print("error: \(error!.localizedDescription)")
             }
             dispatchGroup.leave()
@@ -164,7 +165,7 @@ func translateSourceLanguage() {
     }
     
     dispatchGroup.wait()
-    print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures?.count ?? 0) failures.\n", tlStringsDictionary!)
+    print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary!)
     createNewDirectory()
 }
 
