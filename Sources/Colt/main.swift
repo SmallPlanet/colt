@@ -10,12 +10,11 @@ var slStringsURLs: [URL] = []
 var slStringsFileName: String?
 var slStringsURL: URL?
 var tlStringsURL: URL?
-var slStringsDictionary: Dictionary<String, String>?
-var slStringsURLS: Dictionary<String, URL>?
-var tlStringsDictionary: Dictionary<String, String>?
-var slStrings: KeyValuePairs<String, String> = [:]
-let stringsToIgnore = ["font=", "skipthis"] // TODO: complete list
-var translationFailures: Dictionary<String, String> = [:]
+var slStringsDictionary: [String:String]?
+var slStringsURLS: [String:URL]?
+var tlStringsDictionary: [String:String]?
+var slStrings: [String:String] = [:]
+var translationFailures: [String:String] = [:]
 
 let localFileManager = FileManager()
 let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
@@ -116,7 +115,7 @@ func parseSourceLanguageFile() {
     if let stringsUrl = slStringsURL {
         do {
             let fileString = try String(contentsOf: stringsUrl)
-            slStringsDictionary = String.propertyListFromStringsFileFormat(fileString)()
+            slStringsDictionary = fileString.propertyListFromStringsFileFormat()
             translateSourceLanguage()
         } catch {
             showError("Unable to read format of strings file")
@@ -136,14 +135,6 @@ func translateSourceLanguage() {
     
     for slDict in slStringsDictionary {
         let slText = slDict.value
-        
-        let shouldIgnore = stringsToIgnore.filter{ slText.contains($0) }.count > 0
-        if shouldIgnore {
-            progressBar.next()
-            //tlStringsDictionary?[slDict.key] = slDict.value // should I include it in the new file in its original form?
-            continue
-        }
-        
         print("Translating: \(slText)")
         guard let escapedText = slText.stringByAddingPercentEncoding(),
             let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
