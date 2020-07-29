@@ -13,7 +13,13 @@
 
 "Tabs.Settings" = "Settings";
 "Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
-"Login.AppName" = "ALLY";
+"Login.AppName" = "<html>stuff here</html>";
+//"Login.AppName": "<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\nmateria aquí</html>"
+
+"@WILDCARDSTYLEBASE" = "size=28,align=center,font=Avenir-Light,color=#FFFFFFFF,kerning=.5";
+"@WILDCARDSTYLEBOLD" = "size=28,align=center,font=Avenir-Heavy,color=#FFFFFFFF,kerning=.5";
+"@WILDCARDSTYLESMALL" = "size=16,align=center,font=Avenir-Medium,color=#FFFFFFFF,kerning=.5";
+
 /*
 "Login.Username" = "Username";
 "Login.Password" = "Password";

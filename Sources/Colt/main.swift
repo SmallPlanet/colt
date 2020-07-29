@@ -14,6 +14,7 @@ var slStringsDictionary: Dictionary<String, String>?
 var slStringsURLS: Dictionary<String, URL>?
 var tlStringsDictionary: Dictionary<String, String>?
 var slStrings: KeyValuePairs<String, String> = [:]
+let stringsToIgnore = ["font=", "skipthis"] // TODO: complete list
 var translationFailures: Dictionary<String, String> = [:]
 
 let localFileManager = FileManager()
@@ -133,8 +134,15 @@ func translateSourceLanguage() {
     var progressBar = ProgressBar(count: slStringsDictionary.count - 1)
     var itemcount = 0
     
-    slStringsDictionary.forEach { slDict in
+    for slDict in slStringsDictionary {
         let slText = slDict.value
+        
+        let shouldIgnore = stringsToIgnore.filter{ slText.contains($0) }.count > 0
+        if shouldIgnore {
+            //tlStringsDictionary?[slDict.key] = slDict.value // should I include it in the new file in its original form?
+            continue
+        }
+        
         print("Translating: \(slText)")
         guard let escapedText = slText.stringByAddingPercentEncoding(),
             let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
