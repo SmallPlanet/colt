@@ -130,8 +130,7 @@ func translateSourceLanguage() {
     guard let slStringsDictionary = slStringsDictionary else { return }
     tlStringsDictionary = [:]
     
-    var progressBar = ProgressBar(count: slStringsDictionary.count - 1)
-    var itemcount = 0
+    var progressBar = ProgressBar(count: slStringsDictionary.count)
     
     for slDict in slStringsDictionary {
         let slText = slDict.value
@@ -143,7 +142,6 @@ func translateSourceLanguage() {
         
         dispatchGroup.enter()
         session.dataTask(with: request, completionHandler: { (data, response, error) in
-            itemcount += 1
             progressBar.next()
             if let data = data {
                 do{
@@ -169,6 +167,7 @@ func translateSourceLanguage() {
     }
     
     dispatchGroup.wait()
+    progressBar.setValue(slStringsDictionary.count)
     print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary!)
     createNewDirectory()
 }
