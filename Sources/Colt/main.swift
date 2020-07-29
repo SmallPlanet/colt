@@ -139,6 +139,7 @@ func translateSourceLanguage() {
         
         let shouldIgnore = stringsToIgnore.filter{ slText.contains($0) }.count > 0
         if shouldIgnore {
+            progressBar.next()
             //tlStringsDictionary?[slDict.key] = slDict.value // should I include it in the new file in its original form?
             continue
         }
