@@ -48,23 +48,25 @@ func startColt() {
     print("startColt: \(slCode) to \(tlCode)")
     guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
     guard supportedLanguageCodes.contains(tlCode) else { showError("Translation language is not supported."); return }
-    
-//    let apiKey = ProcessInfo.processInfo.environment["RAPIDAPI_KEY"]
-//    print(apiKey)
-//
-//    return
             
-    // look in home directory and use a .hidden file (.colt) - can be used with multiple projects
-    let rapidApiKeyPath = URL(fileURLWithPath: localFileManager.currentDirectoryPath + "/rapid_api_key.txt")
+    // Retreive rapidapi-key from .colt file in home directory
+    var coltFilePath: URL
+    if #available(OSX 10.12, *) {
+        coltFilePath = FileManager.default.homeDirectoryForCurrentUser
+    } else {
+        coltFilePath = URL(fileURLWithPath: NSHomeDirectory())
+    }
+    coltFilePath.appendPathComponent(".colt")
+    
     do {
-        try rapid_api_key = String.init(contentsOf: rapidApiKeyPath)
-        systranHeaders["x-rapidapi-key"] = rapid_api_key
+        let coltFileContents = try String.init(contentsOf: coltFilePath)
+        rapid_api_key = coltFileContents.components(separatedBy: "=").last // revisit
+        systranHeaders["x-rapidapi-key"] = rapid_api_key // optional
     } catch {
-        systranHeaders["x-rapidapi-key"] = "6368a1c70cmsh41415f22aff7cbcp1cdc9djsn47c4c53c8e2d" // TODO: REMOVE BEFORE RELEASE. TEMP FOR RUNNING IN XCODE
-        //showError("RapidAPI key not found") // TODO: UNCOMMENT BEFORE RELEASE
+        showError("RapidAPI key not found")
     }
     
-    // Check for network if OS is above 10.14
+    // Check for network if OS is above 10.14, otherwise let 'em through
     if #available(OSX 10.14, *) {
         let monitor = NWPathMonitor()
         dispatchGroup.enter()
@@ -77,7 +79,7 @@ func startColt() {
         let queue = DispatchQueue(label: "Monitor")
         monitor.start(queue: queue)
         dispatchGroup.wait()
-        monitor.pathUpdateHandler = nil // remove after use?
+        monitor.cancel()
     }
     
     //TODO: Finish the header
@@ -111,11 +113,13 @@ func parseSourceLanguageFile() {
     slStringsURL = slStringsURLs[currentSlIndex]
     slStringsFileName = slStringsURL?.lastPathComponent
     if let stringsUrl = slStringsURL {
-        // is there another solution where I can use Dictionary?
-        // string - property list from strings file format
-        guard let dictionary = NSDictionary(contentsOf: stringsUrl) else { showError("Failed to create dictionary from strings file"); exit(EX_DATAERR) }
-        slStringsDictionary = dictionary as? Dictionary // converting to Dictionary so we can set types
-        translateSourceLanguage()
+        do {
+            let fileString = try String(contentsOf: stringsUrl)
+            slStringsDictionary = String.propertyListFromStringsFileFormat(fileString)()
+            translateSourceLanguage()
+        } catch {
+            showError("Unable to read format of strings file")
+        }
     }
 }
 
