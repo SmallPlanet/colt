@@ -2,6 +2,7 @@ import Foundation
 import ArgumentParser
 import Network
 import Progress
+import INI
 
 var slCode: String = ""
 var tlCode: String = ""
@@ -22,6 +23,9 @@ var stringsFileHeader: String = ""
 let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
 
 let dispatchGroup = DispatchGroup()
+
+let sessionConfiguration = URLSessionConfiguration.default
+let session = URLSession(configuration: sessionConfiguration)
 
 // x-rapidapi-key will be supplied by the user
 var rapid_api_key: String?
@@ -59,9 +63,9 @@ func startColt() {
     coltFilePath.appendPathComponent(".colt")
     
     do {
-        let coltFileContents = try String.init(contentsOf: coltFilePath)
-        rapid_api_key = coltFileContents.components(separatedBy: "=").last // revisit
-        systranHeaders["x-rapidapi-key"] = rapid_api_key // optional
+        let coltFileContents = try String(contentsOf: coltFilePath)
+        let parsedINI = try parseINI(string: coltFileContents)
+        systranHeaders["x-rapidapi-key"] = parsedINI["keys"]?["rapidapi"]
     } catch {
         showError("RapidAPI key not found")
     }
@@ -122,9 +126,6 @@ func parseSourceLanguageFile() {
         }
     }
 }
-
-let sessionConfiguration = URLSessionConfiguration.default
-let session = URLSession(configuration: sessionConfiguration)
 
 func translateSourceLanguage() {
     guard let slStringsDictionary = slStringsDictionary else { return }

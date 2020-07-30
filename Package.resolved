@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "INI",
+        "repositoryURL": "https://github.com/Bouke/INI",
+        "state": {
+          "branch": null,
+          "revision": "60b7887c6f4051e5cb76b5faa0a7d6db510ddcb0",
+          "version": "1.2.0"
+        }
+      },
+      {
         "package": "Progress",
         "repositoryURL": "https://github.com/jkandzi/Progress.swift",
         "state": {
