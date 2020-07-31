@@ -9,12 +9,12 @@ var tlCode: String = ""
 var pathToSingleFile: String?
 var currentSlIndex: Int = 0
 var slStringsURLs: [URL] = []
-var slStringsFileName: String?
+var slStringsFileName: String = ""
 var slStringsURL: URL?
 var tlStringsURL: URL?
-var slStringsDictionary: [String:String]?
-var slStringsURLS: [String:URL]?
-var tlStringsDictionary: [String:String]?
+var slStringsDictionary: [String:String] = [:]
+var slStringsURLS: [String:URL] = [:]
+var tlStringsDictionary: [String:String] = [:]
 var slStrings: [String:String] = [:]
 var translationFailures: [String:String] = [:]
 
@@ -134,10 +134,10 @@ func findAllStringsFiles() {
 func parseSourceLanguageFile() {
     translationFailures = [:]
     slStringsURL = slStringsURLs[currentSlIndex]
-    slStringsFileName = slStringsURL?.lastPathComponent
-    if let stringsUrl = slStringsURL {
+    if let stringsURL = slStringsURL {
+        slStringsFileName = stringsURL.lastPathComponent
         do {
-            let fileString = try String(contentsOf: stringsUrl)
+            let fileString = try String(contentsOf: stringsURL)
             slStringsDictionary = fileString.propertyListFromStringsFileFormat()
             translateSourceLanguage()
         } catch {
@@ -147,8 +147,7 @@ func parseSourceLanguageFile() {
 }
 
 func translateSourceLanguage() {
-    guard let slStringsDictionary = slStringsDictionary else { return }
-    tlStringsDictionary = [:]
+    tlStringsDictionary = [:] // reset
     
     var progressBar = ProgressBar(count: slStringsDictionary.count)
     
@@ -169,7 +168,7 @@ func translateSourceLanguage() {
                     if let dict = json as? [String: Any],
                         let outputs = dict["outputs"] as? [[String:Any]],
                         let translation = outputs.first?["output"] as? String {
-                        tlStringsDictionary?[slDict.key] = translation
+                        tlStringsDictionary[slDict.key] = translation
                     }
                 } catch {
                     showError("Failed to parse source strings file")
@@ -188,11 +187,11 @@ func translateSourceLanguage() {
     
     dispatchGroup.wait()
     progressBar.setValue(slStringsDictionary.count)
-    print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary!)
+    print(String(tlStringsDictionary.count) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary)
     
     if pathToSingleFile != nil {
         guard let targetURL = slStringsURL?.deletingLastPathComponent() else { return }
-        tlStringsURL = targetURL.appendingPathComponent(tlCode + "_" + slStringsFileName!, isDirectory: false)
+        tlStringsURL = targetURL.appendingPathComponent(tlCode + "_" + slStringsFileName, isDirectory: false)
         if let tlStringsURL = tlStringsURL {
             createNewStringsFile(atPath: tlStringsURL)
         }
@@ -206,7 +205,7 @@ func createNewDirectory() {
     let tlFolderUrl = targetURL.appendingPathComponent("\(tlCode).lproj", isDirectory: true)
     do {
         try localFileManager.createDirectory(at: tlFolderUrl, withIntermediateDirectories: true, attributes: nil)
-        tlStringsURL = tlFolderUrl.appendingPathComponent(slStringsFileName ?? "Localizable.strings", isDirectory: false)
+        tlStringsURL = tlFolderUrl.appendingPathComponent(slStringsFileName, isDirectory: false)
         if let tlStringsURL = tlStringsURL {
             createNewStringsFile(atPath: tlStringsURL)
         }
@@ -218,7 +217,7 @@ func createNewDirectory() {
 func createNewStringsFile(atPath: URL) {
     tlStringsURL = atPath
     do {
-        let stringToWrite = stringsFileHeader + "\n\n" + dictionaryToStringsFileFormat(dictionary: tlStringsDictionary!)
+        let stringToWrite = stringsFileHeader + "\n\n" + dictionaryToStringsFileFormat(dictionary: tlStringsDictionary)
         try stringToWrite.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
     } catch {
         showError("Was unable to create or write to strings file")
