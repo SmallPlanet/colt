@@ -190,7 +190,7 @@ func createNewStringsFile(folderUrl: URL) {
     tlStringsURL = folderUrl.appendingPathComponent(slStringsFileName ?? "Localizable.strings", isDirectory: false)
     guard tlStringsURL != nil else { return }
     do {
-        let stringToWrite = stringsFileHeader + "\n\n" + NSDictionary(dictionary: tlStringsDictionary!).descriptionInStringsFileFormat // is this my unicode nemesis?
+        let stringToWrite = stringsFileHeader + "\n\n" + dictionaryToStringsFileFormat(dictionary: tlStringsDictionary!)
         try stringToWrite.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
     } catch {
         showError("Was unable to create or write to strings file")
@@ -202,6 +202,10 @@ func createNewStringsFile(folderUrl: URL) {
     } else {
         exit(EXIT_SUCCESS)
     }
+}
+
+func dictionaryToStringsFileFormat(dictionary: [String:String]) -> String {
+    return dictionary.map { "\"" + $0.0 + " = " + $0.1.withEscapedQuotes + "\";" }.joined(separator: "\n")
 }
 
 func showError(_ error: String) {

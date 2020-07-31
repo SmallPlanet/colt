@@ -26,6 +26,10 @@ extension String {
       allowed.addCharacters(in: unreserved)
       return addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)
     }
+    
+    var withEscapedQuotes: String {
+        return replacingOccurrences(of: "\"", with: "\\\"")
+    }
 }
 
 extension Data {
