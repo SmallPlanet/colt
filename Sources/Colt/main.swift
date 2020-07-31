@@ -6,6 +6,7 @@ import INI
 
 var slCode: String = ""
 var tlCode: String = ""
+var pathToSingleFile: String?
 var currentSlIndex: Int = 0
 var slStringsURLs: [URL] = []
 var slStringsFileName: String?
@@ -40,11 +41,15 @@ struct Translate: ParsableCommand {
 
 	@Argument()
 	var tlInput: String
+    
+    @Option(name: .shortAndLong, help: "Path to a single file to translate.")
+    var path: String?
 
 	func run() throws {
         slCode = slInput
         tlCode = tlInput
-		startColt()
+        pathToSingleFile = path
+        startColt()
 	}
 }
 
@@ -90,26 +95,40 @@ func startColt() {
     //swiftlint:disable line_length
     stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
 
-    findStringsFiles()
+    pathToSingleFile != nil ? findSingleStringsFile() : findAllStringsFiles()
 }
 
-func findStringsFiles() {
-    let directoryEnumerator = localFileManager.enumerator(at: currentDirectoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
-
-    while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
-        if fileURL.absoluteString.contains("\(slCode).lproj") && fileURL.absoluteString.contains(".strings") {
-            slStringsURLs.append(fileURL)
-        } else if fileURL.absoluteString.contains("\(tlCode).lproj") && fileURL.absoluteString.contains(".strings") {
-            tlStringsURL = fileURL
+func findSingleStringsFile() {
+    if let _ = pathToSingleFile {
+        if !pathToSingleFile!.starts(with: "file://") {
+            pathToSingleFile = "file://" + pathToSingleFile!
+        }
+        if let url = URL(string: pathToSingleFile!) {
+            slStringsURLs.append(url)
+            parseSourceLanguageFile()
+        } else {
+            showError("File cannot be found.")
         }
     }
-    
-    if slStringsURLs.count == 0 {
-        showError("Localization folder cannot be found. Please specify a valid source language")
-        exit(EXIT_FAILURE)
-    } else {
-        parseSourceLanguageFile()
-    }
+}
+
+func findAllStringsFiles() {
+    let directoryEnumerator = localFileManager.enumerator(at: currentDirectoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+
+     while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
+         if fileURL.absoluteString.contains("\(slCode).lproj") && fileURL.absoluteString.contains(".strings") {
+             slStringsURLs.append(fileURL)
+         } else if fileURL.absoluteString.contains("\(tlCode).lproj") && fileURL.absoluteString.contains(".strings") {
+             tlStringsURL = fileURL
+         }
+     }
+     
+     if slStringsURLs.count == 0 {
+         showError("Localization folder cannot be found.")
+         exit(EXIT_FAILURE)
+     } else {
+         parseSourceLanguageFile()
+     }
 }
 
 func parseSourceLanguageFile() {
