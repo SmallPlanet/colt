@@ -189,25 +189,34 @@ func translateSourceLanguage() {
     dispatchGroup.wait()
     progressBar.setValue(slStringsDictionary.count)
     print(String(tlStringsDictionary?.count ?? 0) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary!)
-    createNewDirectory()
+    
+    if pathToSingleFile != nil {
+        guard let targetURL = slStringsURL?.deletingLastPathComponent() else { return }
+        tlStringsURL = targetURL.appendingPathComponent(tlCode + "_" + slStringsFileName!, isDirectory: false)
+        if let tlStringsURL = tlStringsURL {
+            createNewStringsFile(atPath: tlStringsURL)
+        }
+    } else {
+        createNewDirectory()
+    }
 }
 
 func createNewDirectory() {
-    //TODO: Better way to guarantee this directory is ok
-    // Support multiple directory structures
     guard let targetURL = slStringsURL?.deletingLastPathComponent().deletingLastPathComponent() else { print("no parent directory"); return }
     let tlFolderUrl = targetURL.appendingPathComponent("\(tlCode).lproj", isDirectory: true)
     do {
         try localFileManager.createDirectory(at: tlFolderUrl, withIntermediateDirectories: true, attributes: nil)
-        createNewStringsFile(folderUrl: tlFolderUrl)
+        tlStringsURL = tlFolderUrl.appendingPathComponent(slStringsFileName ?? "Localizable.strings", isDirectory: false)
+        if let tlStringsURL = tlStringsURL {
+            createNewStringsFile(atPath: tlStringsURL)
+        }
     } catch {
-        print("could not create directory")
+        showError("Could now create translation language directory")
     }
 }
 
-func createNewStringsFile(folderUrl: URL) {
-    tlStringsURL = folderUrl.appendingPathComponent(slStringsFileName ?? "Localizable.strings", isDirectory: false)
-    guard tlStringsURL != nil else { return }
+func createNewStringsFile(atPath: URL) {
+    tlStringsURL = atPath
     do {
         let stringToWrite = stringsFileHeader + "\n\n" + dictionaryToStringsFileFormat(dictionary: tlStringsDictionary!)
         try stringToWrite.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
