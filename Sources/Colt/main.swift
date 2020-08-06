@@ -104,8 +104,12 @@ func findSingleStringsFile() {
             pathToSingleFile = "file://" + pathToSingleFile!
         }
         if let url = URL(string: pathToSingleFile!) {
-            slStringsURLs.append(url)
-            parseSourceLanguageFile()
+            if url.lastPathComponent.lowercased().contains("coltignore") {
+                showError("A file cannot be translated if it has 'coltIgnore' in its title")
+            } else {
+                slStringsURLs.append(url)
+                parseSourceLanguageFile()
+            }
         } else {
             showError("File cannot be found.")
         }
@@ -116,15 +120,17 @@ func findAllStringsFiles() {
     let directoryEnumerator = localFileManager.enumerator(at: currentDirectoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
 
      while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
-         if fileURL.absoluteString.contains("\(slCode).lproj") && fileURL.absoluteString.contains(".strings") {
+        if fileURL.lastPathComponent.lowercased().contains("coltignore") { continue }
+        
+        if fileURL.absoluteString.contains("\(slCode).lproj") && fileURL.lastPathComponent.contains(".strings") {
              slStringsURLs.append(fileURL)
-         } else if fileURL.absoluteString.contains("\(tlCode).lproj") && fileURL.absoluteString.contains(".strings") {
-             tlStringsURL = fileURL
-         }
+        } else if fileURL.absoluteString.contains("\(tlCode).lproj") && fileURL.lastPathComponent.contains(".strings") {
+             tlStringsURL = fileURL // currently not used. will be used when no longer overwriting files, post-MVP.
+        }
      }
      
      if slStringsURLs.count == 0 {
-         showError("Localization folder cannot be found.")
+         showError("Localization folder cannot be found, or all strings file are being ignored.")
          exit(EXIT_FAILURE)
      } else {
          parseSourceLanguageFile()
@@ -232,7 +238,7 @@ func createNewStringsFile(atPath: URL) {
 }
 
 func dictionaryToStringsFileFormat(dictionary: [String:String]) -> String {
-    return dictionary.map { "\"" + $0.0 + " = " + $0.1.withEscapedQuotes + "\";" }.joined(separator: "\n")
+    return dictionary.map { "\"" + $0.0.withEscapedQuotes + " = " + $0.1.withEscapedQuotes + "\";" }.joined(separator: "\n")
 }
 
 func showError(_ error: String) {
