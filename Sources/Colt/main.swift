@@ -6,7 +6,9 @@ import INI
 
 var slCode: String = ""
 var tlCode: String = ""
-var pathToSingleFile: String?
+var inputPath: String = ""
+var inputPathIsDirectory = true
+var outputPath: String?
 var currentSlIndex: Int = 0
 var slStringsURLs: [URL] = []
 var slStringsFileName: String = ""
@@ -41,13 +43,17 @@ struct Translate: ParsableCommand {
 	@Argument()
 	var tlInput: String
     
-    @Option(name: .shortAndLong, help: "Path to a single file to translate.")
-    var path: String?
+    @Argument(help: "Path to a single file or directory to translate.")
+    var path: String
+    
+    @Option(name: .shortAndLong, help: "Path to save output file.")
+    var output: String?
 
 	func run() throws {
         slCode = slInput
         tlCode = tlInput
-        pathToSingleFile = path
+        inputPath = path
+        outputPath = output
         startColt()
 	}
 }
@@ -91,25 +97,25 @@ func startColt() {
     //TODO: Finish the header
     //swiftlint:disable line_length
     stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
-
-    pathToSingleFile != nil ? findSingleStringsFile() : findAllStringsFiles()
+    
+    inputPathIsDirectory = FileManager.default.directoryExists(inputPath)
+    inputPathIsDirectory ? findAllStringsFiles() : findSingleStringsFile()
 }
 
 func findSingleStringsFile() {
-    if let _ = pathToSingleFile {
-        if !pathToSingleFile!.starts(with: "file://") {
-            pathToSingleFile = "file://" + pathToSingleFile!
-        }
-        if let url = URL(string: pathToSingleFile!) {
-            if url.lastPathComponent.lowercased().contains("coltignore") {
-                showError("A file cannot be translated if it has 'coltIgnore' in its title")
-            } else {
-                slStringsURLs.append(url)
-                parseSourceLanguageFile()
-            }
+    inputPathIsDirectory = false
+    if !inputPath.starts(with: "file://") {
+        inputPath = "file://" + inputPath
+    }
+    if let url = URL(string: inputPath) {
+        if url.lastPathComponent.lowercased().contains("coltignore") {
+            showError("A file cannot be translated if it has 'coltIgnore' in its title")
         } else {
-            showError("File cannot be found.")
+            slStringsURLs.append(url)
+            parseSourceLanguageFile()
         }
+    } else {
+        showError("File cannot be found.")
     }
 }
 
@@ -193,10 +199,10 @@ func translateSourceLanguage() {
     print(String(tlStringsDictionary.count) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary)
     
     if tlStringsDictionary.count == 0 {
-        showError("⚠️  Colt stopped. Strings were unable to be translated")
+        showError("Colt stopped. Strings were unable to be translated")
     }
     
-    if pathToSingleFile != nil {
+    if !inputPathIsDirectory {
         guard let targetURL = slStringsURL?.deletingLastPathComponent() else { return }
         tlStringsURL = targetURL.appendingPathComponent(tlCode + "_" + slStringsFileName, isDirectory: false)
         if let tlStringsURL = tlStringsURL {
@@ -243,7 +249,8 @@ func dictionaryToStringsFileFormat(dictionary: [String:String]) -> String {
 }
 
 func showError(_ error: String) {
-    print(error)
+    print("⚠️  " + error)
+    // if exit worthy error is found in one file, move on to the next one
     if currentSlIndex < slStringsURLs.count - 1 {
         print("Skipping file at \(slStringsURLs[currentSlIndex])")
         currentSlIndex += 1
