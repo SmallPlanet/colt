@@ -19,7 +19,6 @@ var slStrings: [String:String] = [:]
 var translationFailures: [String:String] = [:]
 
 let localFileManager = FileManager()
-let supportedLanguageCodes: Array = ["en", "es", "fr", "it"]
 var stringsFileHeader: String = ""
 let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
 
@@ -55,8 +54,6 @@ struct Translate: ParsableCommand {
 
 func startColt() {
     print("startColt: \(slCode) to \(tlCode)")
-    guard supportedLanguageCodes.contains(slCode) else { showError("Source language is not supported."); return }
-    guard supportedLanguageCodes.contains(tlCode) else { showError("Translation language is not supported."); return }
             
     // Retreive rapidapi-key from .colt file in home directory
     var coltFilePath: URL
@@ -144,7 +141,7 @@ func parseSourceLanguageFile() {
         slStringsFileName = stringsURL.lastPathComponent
         do {
             let fileString = try String(contentsOf: stringsURL)
-            slStringsDictionary = fileString.propertyListFromStringsFileFormat()
+            slStringsDictionary = fileString.propertyListFromStringsFileFormat() // crashes if file is incorrect format.
             translateSourceLanguage()
         } catch {
             showError("Unable to read format of strings file")
@@ -171,16 +168,16 @@ func translateSourceLanguage() {
             if let data = data {
                 do{
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
-                    if let dict = json as? [String: Any],
-                        let outputs = dict["outputs"] as? [[String:Any]],
-                        let translation = outputs.first?["output"] as? String {
-                        tlStringsDictionary[slDict.key] = translation
+                    if let dict = json as? [String: Any] {
+                        if let outputs = dict["outputs"] as? [[String:Any]],
+                            let translation = outputs.first?["output"] as? String {
+                            tlStringsDictionary[slDict.key] = translation
+                        }
                     }
                 } catch {
                     showError("Failed to parse source strings file")
                 }
             } else if let response = response {
-                
                 translationFailures[slDict.key] = slDict.value
                 print("response: \(response)")
             } else {
@@ -194,6 +191,10 @@ func translateSourceLanguage() {
     dispatchGroup.wait()
     progressBar.setValue(slStringsDictionary.count)
     print(String(tlStringsDictionary.count) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary)
+    
+    if tlStringsDictionary.count == 0 {
+        showError("⚠️  Colt stopped. Strings were unable to be translated")
+    }
     
     if pathToSingleFile != nil {
         guard let targetURL = slStringsURL?.deletingLastPathComponent() else { return }
