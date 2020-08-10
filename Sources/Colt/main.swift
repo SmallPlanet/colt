@@ -179,6 +179,7 @@ func translateSourceLanguage() {
                 do{
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
                     if let dict = json as? [String: Any] {
+                        // TODO: Add error message "Invalid language pair"
                         if let outputs = dict["outputs"] as? [[String:Any]],
                             let translation = outputs.first?["output"] as? String {
                             tlStringsDictionary[slDict.key] = translation
@@ -260,7 +261,7 @@ func createNewStringsFile(at path: URL) {
 }
 
 func dictionaryToStringsFileFormat(dictionary: [String:String]) -> String {
-    return dictionary.map { "\"" + $0.0.withEscapedQuotes + " = " + $0.1.withEscapedQuotes + "\";" }.joined(separator: "\n")
+    return dictionary.map { "\"" + $0.0.withEscapedQuotes + "\" = \"" + $0.1.withEscapedQuotes + "\";" }.joined(separator: "\n")
 }
 
 func showError(_ error: String) {
