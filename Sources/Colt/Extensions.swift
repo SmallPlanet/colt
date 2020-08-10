@@ -30,6 +30,10 @@ extension String {
     var withEscapedQuotes: String {
         return replacingOccurrences(of: "\"", with: "\\\"")
     }
+    
+    var directoryExists: Bool {
+        return FileManager.default.directoryExists(self)
+    }
 }
 
 extension Data {

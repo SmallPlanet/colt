@@ -8,7 +8,7 @@ var slCode: String = ""
 var tlCode: String = ""
 var inputPath: String = ""
 var inputPathIsDirectory = true
-var outputPath: String?
+var tlOutputPath: String?
 var currentSlIndex: Int = 0
 var slStringsURLs: [URL] = []
 var slStringsFileName: String = ""
@@ -46,20 +46,25 @@ struct Translate: ParsableCommand {
     @Argument(help: "Path to a single file or directory to translate.")
     var path: String
     
-    @Option(name: .shortAndLong, help: "Path to save output file.")
-    var output: String?
+    @Option(name: .shortAndLong, help: "Path to save output file(s).")
+    var outputPath: String?
 
 	func run() throws {
         slCode = slInput
         tlCode = tlInput
         inputPath = path
-        outputPath = output
+        tlOutputPath = outputPath
         startColt()
 	}
 }
 
 func startColt() {
-    print("startColt: \(slCode) to \(tlCode)")
+    print("Colt Translating: \(slCode) to \(tlCode)")
+    
+    // Check if valid output path
+    if let tlOutputPath = tlOutputPath, !tlOutputPath.directoryExists {
+        showError("Output path directory does not exist.")
+    }
             
     // Retreive rapidapi-key from .colt file in home directory
     var coltFilePath: URL
@@ -94,11 +99,10 @@ func startColt() {
         monitor.cancel()
     }
     
-    //TODO: Finish the header
     //swiftlint:disable line_length
     stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
     
-    inputPathIsDirectory = FileManager.default.directoryExists(inputPath)
+    inputPathIsDirectory = inputPath.directoryExists
     inputPathIsDirectory ? findAllStringsFiles() : findSingleStringsFile()
 }
 
@@ -115,7 +119,7 @@ func findSingleStringsFile() {
             parseSourceLanguageFile()
         }
     } else {
-        showError("File cannot be found.")
+        showError("Source language file cannot be found.")
     }
 }
 
@@ -150,7 +154,7 @@ func parseSourceLanguageFile() {
             slStringsDictionary = fileString.propertyListFromStringsFileFormat() // crashes if file is incorrect format.
             translateSourceLanguage()
         } catch {
-            showError("Unable to read format of strings file")
+            showError("Unable to read contents of strings file")
         }
     }
 }
@@ -162,7 +166,7 @@ func translateSourceLanguage() {
     
     for slDict in slStringsDictionary {
         let slText = slDict.value
-        print("Translating: \(slText)")
+        //print("Translating: \(slText)")
         guard let escapedText = slText.stringByAddingPercentEncoding(),
             let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30.0)
@@ -183,12 +187,12 @@ func translateSourceLanguage() {
                 } catch {
                     showError("Failed to parse source strings file")
                 }
-            } else if let response = response {
+            } else if let _ = response {
                 translationFailures[slDict.key] = slDict.value
-                print("response: \(response)")
+                //print("response: \(response)")
             } else {
                 translationFailures[slDict.key] = slDict.value
-                print("error: \(error!.localizedDescription)")
+                //print("error: \(error!.localizedDescription)")
             }
             dispatchGroup.leave()
         }).resume()
@@ -196,39 +200,50 @@ func translateSourceLanguage() {
     
     dispatchGroup.wait()
     progressBar.setValue(slStringsDictionary.count)
-    print(String(tlStringsDictionary.count) + " translated items. \(translationFailures.count) failures.\n", tlStringsDictionary)
+    print(String(tlStringsDictionary.count) + " translated items. \(translationFailures.count) failures.\n") // TODO: If failures, try those again.
     
     if tlStringsDictionary.count == 0 {
-        showError("Colt stopped. Strings were unable to be translated")
+        showError("Colt has stopped. Strings were unable to be translated")
     }
     
-    if !inputPathIsDirectory {
-        guard let targetURL = slStringsURL?.deletingLastPathComponent() else { return }
-        tlStringsURL = targetURL.appendingPathComponent(tlCode + "_" + slStringsFileName, isDirectory: false)
-        if let tlStringsURL = tlStringsURL {
-            createNewStringsFile(atPath: tlStringsURL)
-        }
+    if let tlOutputPath = tlOutputPath { // already checked if directory exists at start
+        createNewFileURL(at: tlOutputPath, withTlPrefix: true)
+    } else if !inputPathIsDirectory {
+        guard let targetURL = slStringsURL?.deletingLastPathComponent().absoluteString else { showError("Unable to create new file from existing file's URL"); return }
+        createNewFileURL(at: targetURL, withTlPrefix: true)
     } else {
         createNewDirectory()
     }
 }
 
+func createNewFileURL(at path: String, withTlPrefix: Bool = false) {
+    let tlCodePrefix = withTlPrefix ? tlCode + "_" : ""
+    tlStringsURL = URL(fileURLWithPath: path).appendingPathComponent(tlCodePrefix + slStringsFileName, isDirectory: false)
+    if let tlStringsURL = tlStringsURL {
+        createNewStringsFile(at: tlStringsURL)
+    }
+}
+
+// If outputPath is not set or valid, we create a new directory in
+// the strings file's parent directory with the format "es.lproj".
 func createNewDirectory() {
-    guard let targetURL = slStringsURL?.deletingLastPathComponent().deletingLastPathComponent() else { print("no parent directory"); return }
+    guard let targetURL = slStringsURL?.deletingLastPathComponent().deletingLastPathComponent() else { showError("Folder has no parent directory"); return }
     let tlFolderUrl = targetURL.appendingPathComponent("\(tlCode).lproj", isDirectory: true)
     do {
-        try localFileManager.createDirectory(at: tlFolderUrl, withIntermediateDirectories: true, attributes: nil)
+        if !tlFolderUrl.absoluteString.directoryExists {
+            try localFileManager.createDirectory(at: tlFolderUrl, withIntermediateDirectories: true, attributes: nil)
+        }
         tlStringsURL = tlFolderUrl.appendingPathComponent(slStringsFileName, isDirectory: false)
         if let tlStringsURL = tlStringsURL {
-            createNewStringsFile(atPath: tlStringsURL)
+            createNewStringsFile(at: tlStringsURL)
         }
     } catch {
         showError("Could now create translation language directory")
     }
 }
 
-func createNewStringsFile(atPath: URL) {
-    tlStringsURL = atPath
+func createNewStringsFile(at path: URL) {
+    tlStringsURL = path
     do {
         let stringToWrite = stringsFileHeader + "\n\n" + dictionaryToStringsFileFormat(dictionary: tlStringsDictionary)
         try stringToWrite.write(to: tlStringsURL!, atomically: false, encoding: String.Encoding.utf8)
