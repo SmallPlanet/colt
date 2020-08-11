@@ -1,5 +1,5 @@
 *** This project is currently in progress. ***<br>
-<img align="center" src="meta/COLT_logo_400x400.png" >
+<img align="center" src="meta/colt_logo.png" >
 
 # COLT - COmmand Line Translation
 Colt is a command line tool that allows a developer to automate strings translations for localization. It will parse your existing file(s), translate each string to your desired language, and save them into a new file. This can be a tool for developers who do not have the resources to hire a translator, yet want to make their apps more accessible. Or, for those simply curious at how their app would look in a different language.
