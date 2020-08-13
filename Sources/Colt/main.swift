@@ -106,6 +106,31 @@ func startColt() {
     inputPathIsDirectory ? findAllStringsFiles() : findSingleStringsFile()
 }
 
+/*
+// txt file to strings formate - war and peace
+func parseIntoStrings() {
+    do {
+        let inputURL = URL(fileURLWithPath: inputPath)
+        let fileStringArray = try String(contentsOf: inputURL).replacingOccurrences(of: "\n", with: "").components(separatedBy: " ")
+        let uniqueWords = Array(Set(fileStringArray))
+        var stringToWrite = ""
+        
+        uniqueWords.forEach { word in
+            stringToWrite.append(contentsOf: stringToStringsFileFormat(string: word.withEscapedQuotes))
+        }
+
+        let targetURL = inputURL.deletingLastPathComponent().appendingPathComponent("war_and_peace.strings", isDirectory: false)
+        try stringToWrite.write(to: targetURL, atomically: false, encoding: .utf8)
+    } catch {
+        showError("Busted.")
+    }
+}
+ */
+
+func stringToStringsFileFormat(string: String) -> String {
+    return "\"" + string + "\" = \"" + string + "\";\n"
+}
+
 func findSingleStringsFile() {
     inputPathIsDirectory = false
     if !inputPath.starts(with: "file://") {
@@ -162,14 +187,14 @@ func parseSourceLanguageFile() {
 func translateSourceLanguage() {
     tlStringsDictionary = [:] // reset
     
-    var progressBar = ProgressBar(count: slStringsDictionary.count)
+    var progressBar = ProgressBar(count: slStringsDictionary.count, configuration: [ProgressIndex(), ProgressTimeEstimates(), ProgressBarLine(barLength: 60)], printer: nil)
     
     for slDict in slStringsDictionary {
         let slText = slDict.value
         //print("Translating: \(slText)")
         guard let escapedText = slText.stringByAddingPercentEncoding(),
             let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
-        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 30.0)
+        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: .infinity)
         request.allHTTPHeaderFields = systranHeaders
         
         dispatchGroup.enter()
@@ -190,10 +215,10 @@ func translateSourceLanguage() {
                 }
             } else if let _ = response {
                 translationFailures[slDict.key] = slDict.value
-                //print("response: \(response)")
+                print("response: \(response.debugDescription)")
             } else {
                 translationFailures[slDict.key] = slDict.value
-                //print("error: \(error!.localizedDescription)")
+                print("error: \(error!.localizedDescription)")
             }
             dispatchGroup.leave()
         }).resume()
