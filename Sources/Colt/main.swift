@@ -106,31 +106,6 @@ func startColt() {
     inputPathIsDirectory ? findAllStringsFiles() : findSingleStringsFile()
 }
 
-/*
-// txt file to strings formate - war and peace
-func parseIntoStrings() {
-    do {
-        let inputURL = URL(fileURLWithPath: inputPath)
-        let fileStringArray = try String(contentsOf: inputURL).replacingOccurrences(of: "\n", with: "").components(separatedBy: " ")
-        let uniqueWords = Array(Set(fileStringArray))
-        var stringToWrite = ""
-        
-        uniqueWords.forEach { word in
-            stringToWrite.append(contentsOf: stringToStringsFileFormat(string: word.withEscapedQuotes))
-        }
-
-        let targetURL = inputURL.deletingLastPathComponent().appendingPathComponent("war_and_peace.strings", isDirectory: false)
-        try stringToWrite.write(to: targetURL, atomically: false, encoding: .utf8)
-    } catch {
-        showError("Busted.")
-    }
-}
- */
-
-func stringToStringsFileFormat(string: String) -> String {
-    return "\"" + string + "\" = \"" + string + "\";\n"
-}
-
 func findSingleStringsFile() {
     inputPathIsDirectory = false
     if !inputPath.starts(with: "file://") {
