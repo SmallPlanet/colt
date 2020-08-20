@@ -14,11 +14,11 @@ var slStringsURLs: [URL] = []
 var slStringsFileName: String = ""
 var slStringsURL: URL?
 var tlStringsURL: URL?
-var slStringsDictionary: [String:String] = [:]
-var slStringsURLS: [String:URL] = [:]
-var tlStringsDictionary: [String:String] = [:]
-var slStrings: [String:String] = [:]
-var translationFailures: [String:String] = [:]
+var slStringsDictionary: [String: String] = [:]
+var slStringsURLS: [String: URL] = [:]
+var tlStringsDictionary: [String: String] = [:]
+var slStrings: [String: String] = [:]
+var translationFailures: [String: String] = [:]
 var progressBar: ProgressBar?
 var translationRetryCount = 0
 var translationRetryMax = 5
@@ -33,7 +33,6 @@ let sessionConfiguration = URLSessionConfiguration.default
 let session = URLSession(configuration: sessionConfiguration)
 
 // x-rapidapi-key will be supplied by the user
-var rapid_api_key: String?
 var systranHeaders = [
     "x-rapidapi-host": "systran-systran-platform-for-language-processing-v1.p.rapidapi.com",
     "x-rapidapi-key": ""
@@ -45,10 +44,10 @@ struct Translate: ParsableCommand {
 
 	@Argument()
 	var tlInput: String
-    
+
     @Argument(help: "Path to a single file or directory to translate.")
     var path: String
-    
+
     @Option(name: .shortAndLong, help: "Path to save output file(s).")
     var outputPath: String?
 
@@ -77,7 +76,7 @@ func startColt() {
         coltFilePath = URL(fileURLWithPath: NSHomeDirectory())
     }
     coltFilePath.appendPathComponent(".colt")
-    
+
     do {
         let coltFileContents = try String(contentsOf: coltFilePath)
         let parsedINI = try parseINI(string: coltFileContents)
@@ -85,7 +84,7 @@ func startColt() {
     } catch {
         showError("RapidAPI key not found")
     }
-    
+
     // Check for network if OS is above 10.14, otherwise let 'em through
     if #available(OSX 10.14, *) {
         let monitor = NWPathMonitor()
@@ -101,10 +100,10 @@ func startColt() {
         dispatchGroup.wait()
         monitor.cancel()
     }
-    
+
     //swiftlint:disable line_length
     stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
-    
+
     inputPathIsDirectory = inputPath.directoryExists
     inputPathIsDirectory ? findAllStringsFiles() : findSingleStringsFile()
 }
@@ -131,14 +130,14 @@ func findAllStringsFiles() {
 
      while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
         if fileURL.lastPathComponent.lowercased().contains("coltignore") { continue }
-        
+
         if fileURL.absoluteString.contains("\(slCode).lproj") && fileURL.lastPathComponent.contains(".strings") {
              slStringsURLs.append(fileURL)
         } else if fileURL.absoluteString.contains("\(tlCode).lproj") && fileURL.lastPathComponent.contains(".strings") {
              tlStringsURL = fileURL // currently not used. will be used when no longer overwriting files, post-MVP.
         }
      }
-     
+
      if slStringsURLs.count == 0 {
          showError("Localization folder cannot be found, or all strings file are being ignored.")
          exit(EXIT_FAILURE)
@@ -168,7 +167,7 @@ func translateSourceLanguage() {
     translate(dictionary: slStringsDictionary)
 }
 
-func translate(dictionary: [String:String]) {
+func translate(dictionary: [String: String]) {
     for slDict in dictionary {
         let slText = slDict.value
         //print("Translating: \(slText)")
@@ -176,16 +175,16 @@ func translate(dictionary: [String:String]) {
             let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: .infinity)
         request.allHTTPHeaderFields = systranHeaders
-        
+
         dispatchGroup.enter()
         session.dataTask(with: request, completionHandler: { (data, response, error) in
             progressBar?.next()
             if let data = data {
-                do{
+                do {
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
                     if let dict = json as? [String: Any] {
                         // TODO: Add error message "Invalid language pair"
-                        if let outputs = dict["outputs"] as? [[String:Any]],
+                        if let outputs = dict["outputs"] as? [[String: Any]],
                             let translation = outputs.first?["output"] as? String {
                             tlStringsDictionary[slDict.key] = translation
                         }
@@ -194,7 +193,7 @@ func translate(dictionary: [String:String]) {
                 } catch {
                     showError("Failed to parse source strings file")
                 }
-            } else if let _ = response {
+            } else if response != nil {
                 translationFailures[slDict.key] = slDict.value
                 print("response: \(response.debugDescription)")
             } else {
@@ -205,8 +204,8 @@ func translate(dictionary: [String:String]) {
         }).resume()
     }
     dispatchGroup.wait()
-    
-    if translationFailures.count > 0 && translationRetryCount < translationRetryMax  {
+
+    if translationFailures.count > 0 && translationRetryCount < translationRetryMax {
         translationRetryCount += 1
         translate(dictionary: translationFailures)
     } else {
@@ -217,11 +216,11 @@ func translate(dictionary: [String:String]) {
 func translationComplete() {
     progressBar?.setValue(slStringsDictionary.count)
     print(String(tlStringsDictionary.count) + " translated items. \(translationFailures.count) failures.\n") // TODO: If failures, try those again.
-    
+
     if tlStringsDictionary.count == 0 {
         showError("Colt has stopped. Strings were unable to be translated")
     }
-    
+
     if let tlOutputPath = tlOutputPath { // already checked if directory exists at start
         createNewFileURL(at: tlOutputPath, withTlPrefix: true)
     } else if !inputPathIsDirectory {
@@ -266,7 +265,7 @@ func createNewStringsFile(at path: URL) {
     } catch {
         showError("Was unable to create or write to strings file")
     }
-    
+
     if currentSlIndex < slStringsURLs.count - 1 {
         currentSlIndex += 1
         parseSourceLanguageFile()
@@ -275,7 +274,7 @@ func createNewStringsFile(at path: URL) {
     }
 }
 
-func dictionaryToStringsFileFormat(dictionary: [String:String]) -> String {
+func dictionaryToStringsFileFormat(dictionary: [String: String]) -> String {
     return dictionary.map { "\"" + $0.0.withEscapedQuotes + "\" = \"" + $0.1.withEscapedQuotes + "\";" }.joined(separator: "\n")
 }
 
@@ -290,6 +289,5 @@ func showError(_ error: String) {
         exit(EXIT_FAILURE)
     }
 }
-
 
 Translate.main()

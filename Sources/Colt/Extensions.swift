@@ -8,8 +8,6 @@
 import Foundation
 //Foundation' inconsistently imported as implementation-only
 
-//TODO: Move to Extensions file
-
 extension String {
     func appendLineToURL(fileURL: URL) throws {
         try (self + "\n").appendToURL(fileURL: fileURL)
@@ -19,18 +17,18 @@ extension String {
         let data = self.data(using: String.Encoding.utf8)!
         try data.append(fileURL: fileURL)
     }
-    
+
     func stringByAddingPercentEncoding() -> String? {
       let unreserved = "-._~/?"
       let allowed = NSMutableCharacterSet.alphanumeric()
       allowed.addCharacters(in: unreserved)
       return addingPercentEncoding(withAllowedCharacters: allowed as CharacterSet)
     }
-    
+
     var withEscapedQuotes: String {
         return replacingOccurrences(of: "\"", with: "\\\"")
     }
-    
+
     var directoryExists: Bool {
         return FileManager.default.directoryExists(self)
     }
@@ -53,7 +51,7 @@ extension Data {
 extension FileManager {
     func directoryExists(_ atPath: String) -> Bool {
         var isDirectory: ObjCBool = false
-        let exists = FileManager.default.fileExists(atPath: atPath, isDirectory:&isDirectory)
+        let exists = FileManager.default.fileExists(atPath: atPath, isDirectory: &isDirectory)
         return exists && isDirectory.boolValue
     }
 }
