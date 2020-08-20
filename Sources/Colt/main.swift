@@ -25,7 +25,6 @@ var translationRetryMax = 5
 
 let localFileManager = FileManager()
 var stringsFileHeader: String = ""
-let currentDirectoryURL: URL = URL(fileURLWithPath: localFileManager.currentDirectoryPath)
 
 let dispatchGroup = DispatchGroup()
 
@@ -126,9 +125,9 @@ func findSingleStringsFile() {
 }
 
 func findAllStringsFiles() {
-    let directoryEnumerator = localFileManager.enumerator(at: currentDirectoryURL, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
+    let directoryEnumerator = localFileManager.enumerator(at: URL(fileURLWithPath: inputPath), includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
 
-     while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
+    while let fileURL = directoryEnumerator?.nextObject() as? URL, slStringsURL == nil || tlStringsURL == nil {
         if fileURL.lastPathComponent.lowercased().contains("coltignore") { continue }
 
         if fileURL.absoluteString.contains("\(slCode).lproj") && fileURL.lastPathComponent.contains(".strings") {
