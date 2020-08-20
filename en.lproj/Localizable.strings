@@ -8,19 +8,22 @@
 
 "Tabs.Priority" = "Priority";
 "Tabs.Plan" = "Call Plan";
+
+
 "Tabs.Me" = "Me";
 "LogCall.SuccessAlert.Title" = "THANKS!";
 
 "Tabs.Settings" = "Settings";
 "Login.Progress.Priority" = "LOADING TODAY'S PRIORITY LIST";
-"Login.AppName" = "<html>stuff here</html>";
-//"Login.AppName": "<html>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\nmateria aquí</html>"
+"Login.AppName" = "App name";
+
+/*
 
 "@WILDCARDSTYLEBASE" = "size=28,align=center,font=Avenir-Light,color=#FFFFFFFF,kerning=.5";
 "@WILDCARDSTYLEBOLD" = "size=28,align=center,font=Avenir-Heavy,color=#FFFFFFFF,kerning=.5";
 "@WILDCARDSTYLESMALL" = "size=16,align=center,font=Avenir-Medium,color=#FFFFFFFF,kerning=.5";
 
-/*
+
 "Login.Username" = "Username";
 "Login.Password" = "Password";
 "Login.Button" = "Log In";
@@ -188,5 +191,4 @@
 "Shared.Relationship" = "Relationship";
 "Shared.Today" = "TODAY";
 "Shared.OK" = "OK";
-
 */

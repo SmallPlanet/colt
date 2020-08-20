@@ -19,6 +19,9 @@ var slStringsURLS: [String:URL] = [:]
 var tlStringsDictionary: [String:String] = [:]
 var slStrings: [String:String] = [:]
 var translationFailures: [String:String] = [:]
+var progressBar: ProgressBar?
+var translationRetryCount = 0
+var translationRetryMax = 5
 
 let localFileManager = FileManager()
 var stringsFileHeader: String = ""
@@ -161,10 +164,12 @@ func parseSourceLanguageFile() {
 
 func translateSourceLanguage() {
     tlStringsDictionary = [:] // reset
-    
-    var progressBar = ProgressBar(count: slStringsDictionary.count, configuration: [ProgressIndex(), ProgressTimeEstimates(), ProgressBarLine(barLength: 60)], printer: nil)
-    
-    for slDict in slStringsDictionary {
+    progressBar = ProgressBar(count: slStringsDictionary.count, configuration: [ProgressIndex(), ProgressTimeEstimates(), ProgressBarLine(barLength: 60)], printer: nil)
+    translate(dictionary: slStringsDictionary)
+}
+
+func translate(dictionary: [String:String]) {
+    for slDict in dictionary {
         let slText = slDict.value
         //print("Translating: \(slText)")
         guard let escapedText = slText.stringByAddingPercentEncoding(),
@@ -174,7 +179,7 @@ func translateSourceLanguage() {
         
         dispatchGroup.enter()
         session.dataTask(with: request, completionHandler: { (data, response, error) in
-            progressBar.next()
+            progressBar?.next()
             if let data = data {
                 do{
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
@@ -184,6 +189,7 @@ func translateSourceLanguage() {
                             let translation = outputs.first?["output"] as? String {
                             tlStringsDictionary[slDict.key] = translation
                         }
+                        translationFailures.removeValue(forKey: slDict.key)
                     }
                 } catch {
                     showError("Failed to parse source strings file")
@@ -198,9 +204,18 @@ func translateSourceLanguage() {
             dispatchGroup.leave()
         }).resume()
     }
-    
     dispatchGroup.wait()
-    progressBar.setValue(slStringsDictionary.count)
+    
+    if translationFailures.count > 0 && translationRetryCount < translationRetryMax  {
+        translationRetryCount += 1
+        translate(dictionary: translationFailures)
+    } else {
+        translationComplete()
+    }
+}
+
+func translationComplete() {
+    progressBar?.setValue(slStringsDictionary.count)
     print(String(tlStringsDictionary.count) + " translated items. \(translationFailures.count) failures.\n") // TODO: If failures, try those again.
     
     if tlStringsDictionary.count == 0 {
@@ -275,5 +290,6 @@ func showError(_ error: String) {
         exit(EXIT_FAILURE)
     }
 }
+
 
 Translate.main()
