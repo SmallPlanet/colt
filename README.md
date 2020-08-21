@@ -28,7 +28,26 @@ swift build --configuration release
 cp .build/release/colt /usr/local/bin/colt
 ```
 
+# Let's Get This Party Started
+Your files must be in the format used for .strings files. In this format, keys and values are separated by an equal sign, and each key-value pair is terminated with a semicolon. The value is optional—if not present, the equal sign is also omitted. The keys and values themselves are always strings enclosed in straight quotation marks. Comments may be included, delimited by `/*` and `*/`, or `//`.
 
+To run colt, run the following in Terminal:
+```
+colt en es [path]
+```
+
+The argument [path] can be used two different ways:
+
+1. Point to a **directory**, and Colt will enumerate through all the files and translate all strings files that have the format of `[sourceLanguage].proj/[name].strings` (the Xcode default). It will not find the source language file if it is in the `Base.lproj` folder. If there is a file that you would like for Colt to ignore, just add `coltIgnore` anywhere in your file name. This can be useful for things like text styles or html that doesn't need translation. Or, if you'd made any changes to the translated file that you don't want to be written over.
+
+2. Point to a **single file**, and as long as it's in the correct strings file format, it will be translated. It does not need to have the `.strings` extension. 
+
+### Optional Arguments
+There is an optional output path argument, where you can set the destination for your translated strings file(s) to be saved. This can be used as following:
+
+```
+colt en es [path] -o [outputPath]
+```
 
 ### SYSTRAN.io
 Colt uses the SYSTRAN.io api for translation. A list of supported language pairs can be found here, under the Machine Translation section. https://platform.systran.net/index (FYI, if wanting to translate to Chinese, you must use the code "zh-Hans" with a capital H. It is not listed like this in the pairs supported pairs list.)
