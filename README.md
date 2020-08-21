@@ -1,6 +1,3 @@
-*** This project is currently in progress. ***
-
-
 <img align="center" src="meta/colt_logo.png" >
 
 # COLT - COmmand Line Translation
@@ -61,10 +58,11 @@ _Warning: If you set an output path while enumerating through a project, and the
 ### Requirements
 Let's repeat these again for the people in the back...
 
-1. Your files must be in the format used for .strings files.
-2. If enumerating through a project, folders must have the format of `[sourceLanguage].proj/[fileName].strings`.
-3. If translating a single file, parent folder and extension doesn’t matter.
-4. If you specify an output folder and enumerate through a project, those .strings files must have unique names. (Can’t be Localizable.strings in multiple language folders)
+1. Set up the api key properly.
+2. Your files must be in the format used for .strings files.
+3. If enumerating through a project, directory format must be `[sourceLanguage].proj/[fileName].strings`.
+4. If translating a single file, parent folder and extension doesn’t matter.
+5. If you specify an output folder and enumerate through a project, those .strings files must have unique names. (Can’t be Localizable.strings in multiple language folders)
 
 ### SYSTRAN.io
 Colt uses the SYSTRAN.io api for translation. A list of supported language pairs can be found here, under the Machine Translation section. https://platform.systran.net/index (FYI, if wanting to translate to Chinese, you must use the code "zh-Hans" with a capital H. It is not listed like this in the pairs supported pairs list.)
