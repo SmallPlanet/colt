@@ -64,7 +64,7 @@ Let's repeat these again for the people in the back...
 4. If translating a single file, parent folder and extension doesn’t matter.
 5. If you specify an output folder and enumerate through a project, those .strings files must have unique names. (Can’t be Localizable.strings in multiple language folders)
 
-### SYSTRAN.io
+# SYSTRAN.io
 Colt uses the SYSTRAN.io api for translation. A list of supported language pairs can be found here, under the Machine Translation section. https://platform.systran.net/index (FYI, if wanting to translate to Chinese, you must use the code "zh-Hans" with a capital H. It is not listed like this in the pairs supported pairs list.)
 
 There is a disclaimer of "SYSTRAN Platform is free for small volumes and testing purposes, monthly subscriptions are available for higher volumes", however with all my testing I never hit this limit. I'm banking on your project not including Les Misérables (although maybe it should).
