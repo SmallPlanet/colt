@@ -18,7 +18,7 @@ Colt will look for the SYSTRAN.io api key in a hidden file in your user's home d
 _NOTE: These instructions will create a release build of this project on your machine so that you can use Colt from any directory._
 
 - Clone this repo
-- Open Terminal run the following commands
+- Open Terminal and run the following commands:
 ```
 cd [path to colt directory]
 swift build --configuration release
