@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "Flynn",
+        "repositoryURL": "https://github.com/KittyMac/Flynn.git",
+        "state": {
+          "branch": null,
+          "revision": "e434aae285d8dae7ccb8398c73e8619640e9bdef",
+          "version": "0.1.3"
+        }
+      },
+      {
         "package": "INI",
         "repositoryURL": "https://github.com/Bouke/INI",
         "state": {

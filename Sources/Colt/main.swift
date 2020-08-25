@@ -17,6 +17,7 @@ var tlStringsURL: URL?
 var slStringsDictionary: [String: String] = [:]
 var slStringsURLS: [String: URL] = [:]
 var tlStringsDictionary: [String: String] = [:]
+var translationActor: Translations?
 var slStrings: [String: String] = [:]
 var translationFailures: [String: String] = [:]
 var progressBar: ProgressBar?
@@ -146,7 +147,6 @@ func findAllStringsFiles() {
 }
 
 func parseSourceLanguageFile() {
-    translationFailures = [:]
     slStringsURL = slStringsURLs[currentSlIndex]
     if let stringsURL = slStringsURL {
         slStringsFileName = stringsURL.lastPathComponent
@@ -161,7 +161,9 @@ func parseSourceLanguageFile() {
 }
 
 func translateSourceLanguage() {
+    translationFailures = [:]
     tlStringsDictionary = [:] // reset
+    translationActor = Translations()
     progressBar = ProgressBar(count: slStringsDictionary.count, configuration: [ProgressIndex(), ProgressTimeEstimates(), ProgressBarLine(barLength: 60)], printer: nil)
     translate(dictionary: slStringsDictionary)
 }
@@ -186,6 +188,7 @@ func translate(dictionary: [String: String]) {
                         if let outputs = dict["outputs"] as? [[String: Any]],
                             let translation = outputs.first?["output"] as? String {
                             tlStringsDictionary[slDict.key] = translation
+                            translationActor?.beStoreTranslation(slDict.key, translation)
                         }
                         translationFailures.removeValue(forKey: slDict.key)
                     }
@@ -203,6 +206,8 @@ func translate(dictionary: [String: String]) {
         }).resume()
     }
     dispatchGroup.wait()
+    
+    print("Actor dictionary: \(translationActor!.unsafeGetTranslations())")
 
     if translationFailures.count > 0 && translationRetryCount < translationRetryMax {
         translationRetryCount += 1
