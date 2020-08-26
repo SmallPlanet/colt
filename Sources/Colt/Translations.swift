@@ -26,22 +26,25 @@ class Translations: Actor {
         request.allHTTPHeaderFields = systranHeaders
 
         session.dataTask(with: request, completionHandler: { (data, response, error) in
-            if let data = data {
-                do {
-                    let json = try JSONSerialization.jsonObject(with: data, options: [])
-                    if let dict = json as? [String: Any] {
-                        if let outputs = dict["outputs"] as? [[String: Any]],
-                            let translation = outputs.first?["output"] as? String {
-                            self.translations.append(StringItem(key: item.key, value: translation))
+            self.unsafeSend {                
+                //this closure is unsafe
+                if let data = data {
+                    do {
+                        let json = try JSONSerialization.jsonObject(with: data, options: [])
+                        if let dict = json as? [String: Any] {
+                            if let outputs = dict["outputs"] as? [[String: Any]],
+                                let translation = outputs.first?["output"] as? String {
+                                self.translations.append(StringItem(key: item.key, value: translation))
+                            }
                         }
+                    } catch {
+                        showError("Failed to parse source strings file")
                     }
-                } catch {
-                    showError("Failed to parse source strings file")
+                } else if response != nil {
+                    print("response: \(response.debugDescription)")
+                } else {
+                    print("error: \(error!.localizedDescription)")
                 }
-            } else if response != nil {
-                print("response: \(response.debugDescription)")
-            } else {
-                print("error: \(error!.localizedDescription)")
             }
         }).resume()
     }
