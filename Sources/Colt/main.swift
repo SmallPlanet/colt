@@ -38,6 +38,12 @@ var systranHeaders = [
     "x-rapidapi-key": ""
 ]
 
+struct StringItem {
+    var key: String
+    var value: String
+}
+var slStringsArray: [StringItem] = []
+
 struct Translate: ParsableCommand {
 	@Argument()
 	var slInput: String
@@ -150,71 +156,31 @@ func parseSourceLanguageFile() {
     slStringsURL = slStringsURLs[currentSlIndex]
     if let stringsURL = slStringsURL {
         slStringsFileName = stringsURL.lastPathComponent
+        let lines: [String]
         do {
-            let fileString = try String(contentsOf: stringsURL)
-            slStringsDictionary = fileString.propertyListFromStringsFileFormat() // crashes if file is incorrect format.
-            translateSourceLanguage()
+            let fileString = try String(contentsOf: stringsURL, encoding: .utf8)
+            lines = fileString.components(separatedBy: .newlines) // 🦁
         } catch {
             showError("Unable to read contents of strings file")
+            exit(EX_DATAERR)
         }
+        
+        _ = lines.map{ line in
+            let c = line.components(separatedBy: "\"")
+            guard c.count > 1 else { return }
+            let key = c[1]
+            let value = c.count > 3 ? c[3] : key
+            slStringsArray.append(StringItem(key: key, value: value))
+        }
+        translateSourceLanguage()
     }
 }
+
+// MARK: Flynn
 
 func translateSourceLanguage() {
-    translationFailures = [:]
-    tlStringsDictionary = [:] // reset
-    translationActor = Translations()
-    progressBar = ProgressBar(count: slStringsDictionary.count, configuration: [ProgressIndex(), ProgressTimeEstimates(), ProgressBarLine(barLength: 60)], printer: nil)
-    translate(dictionary: slStringsDictionary)
-}
-
-func translate(dictionary: [String: String]) {
-    for slDict in dictionary {
-        let slText = slDict.value
-        //print("Translating: \(slText)")
-        guard let escapedText = slText.stringByAddingPercentEncoding(),
-            let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
-        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: .infinity)
-        request.allHTTPHeaderFields = systranHeaders
-
-        dispatchGroup.enter()
-        session.dataTask(with: request, completionHandler: { (data, response, error) in
-            progressBar?.next()
-            if let data = data {
-                do {
-                    let json = try JSONSerialization.jsonObject(with: data, options: [])
-                    if let dict = json as? [String: Any] {
-                        // TODO: Add error message "Invalid language pair"
-                        if let outputs = dict["outputs"] as? [[String: Any]],
-                            let translation = outputs.first?["output"] as? String {
-                            tlStringsDictionary[slDict.key] = translation
-                            translationActor?.beStoreTranslation(slDict.key, translation)
-                        }
-                        translationFailures.removeValue(forKey: slDict.key)
-                    }
-                } catch {
-                    showError("Failed to parse source strings file")
-                }
-            } else if response != nil {
-                translationFailures[slDict.key] = slDict.value
-                print("response: \(response.debugDescription)")
-            } else {
-                translationFailures[slDict.key] = slDict.value
-                print("error: \(error!.localizedDescription)")
-            }
-            dispatchGroup.leave()
-        }).resume()
-    }
-    dispatchGroup.wait()
-    
-    print("Actor dictionary: \(translationActor!.unsafeGetTranslations())")
-
-    if translationFailures.count > 0 && translationRetryCount < translationRetryMax {
-        translationRetryCount += 1
-        translate(dictionary: translationFailures)
-    } else {
-        translationComplete()
-    }
+    _ = slStringsArray.map{ Translations.shared.beTranslate(item: $0, from: slCode, to: tlCode) }
+    // stops here for flynn exercise.
 }
 
 func translationComplete() {
@@ -295,3 +261,4 @@ func showError(_ error: String) {
 }
 
 Translate.main()
+RunLoop.main.run()

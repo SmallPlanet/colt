@@ -9,14 +9,41 @@ import Flynn
 import Foundation
 
 class Translations: Actor {
-    private var translations: [String: String] = [:]
-    
-    private func _beStoreTranslation(_ key: String, _ value: String) {
-      translations[key] = value
+    public static let shared = Translations()
+    private override init() {
+        super.init()
+        unsafeCoreAffinity = .onlyPerformance
     }
     
-    public func unsafeGetTranslations() -> [String: String] {
-        return translations
+    private var translations: [StringItem] = []
+    
+    private func _beTranslate(item: StringItem, from slCode: String, to tlCode: String) {
+        let slText = item.value
+        print("Translating: \(slText)")
+        guard let escapedText = slText.stringByAddingPercentEncoding(), let url = URL(string: "https://systran-systran-platform-for-language-processing-v1.p.rapidapi.com/translation/text/translate?source=\(slCode)&target=\(tlCode)&input=\(escapedText)") else { return }
+        
+        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: .infinity)
+        request.allHTTPHeaderFields = systranHeaders
+
+        session.dataTask(with: request, completionHandler: { (data, response, error) in
+            if let data = data {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data, options: [])
+                    if let dict = json as? [String: Any] {
+                        if let outputs = dict["outputs"] as? [[String: Any]],
+                            let translation = outputs.first?["output"] as? String {
+                            self.translations.append(StringItem(key: item.key, value: translation))
+                        }
+                    }
+                } catch {
+                    showError("Failed to parse source strings file")
+                }
+            } else if response != nil {
+                print("response: \(response.debugDescription)")
+            } else {
+                print("error: \(error!.localizedDescription)")
+            }
+        }).resume()
     }
 }
 
@@ -28,8 +55,8 @@ class Translations: Actor {
 extension Translations {
 
     @discardableResult
-    public func beStoreTranslation(_ key: String, _ value: String) -> Self {
-        unsafeSend { self._beStoreTranslation(key, value) }
+    public func beTranslate(item: StringItem, from slCode: String, to tlCode: String) -> Self {
+        unsafeSend { self._beTranslate(item: item, from: slCode, to: tlCode) }
         return self
     }
 
