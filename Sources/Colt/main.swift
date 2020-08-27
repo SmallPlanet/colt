@@ -146,7 +146,6 @@ func findAllStringsFiles() {
 }
 
 func parseSourceLanguageFile() {
-    translationFailures = [:]
     slStringsURL = slStringsURLs[currentSlIndex]
     if let stringsURL = slStringsURL {
         slStringsFileName = stringsURL.lastPathComponent
@@ -162,6 +161,7 @@ func parseSourceLanguageFile() {
 
 func translateSourceLanguage() {
     tlStringsDictionary = [:] // reset
+    translationFailures = [:]
     progressBar = ProgressBar(count: slStringsDictionary.count, configuration: [ProgressIndex(), ProgressTimeEstimates(), ProgressBarLine(barLength: 60)], printer: nil)
     translate(dictionary: slStringsDictionary)
 }
@@ -182,8 +182,12 @@ func translate(dictionary: [String: String]) {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data, options: [])
                     if let dict = json as? [String: Any] {
-                        // TODO: Add error message "Invalid language pair"
-                        if let outputs = dict["outputs"] as? [[String: Any]],
+                        if let outputs = dict["error"] as? [String: Any],
+                            let message = outputs["message"] as? String {
+                            if message.contains("Route not found for service") {
+                                showError("Please enter a valid language pair")
+                            }
+                        } else if let outputs = dict["outputs"] as? [[String: Any]],
                             let translation = outputs.first?["output"] as? String {
                             tlStringsDictionary[slDict.key] = translation
                         }
