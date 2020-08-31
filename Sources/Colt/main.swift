@@ -38,11 +38,11 @@ var systranHeaders = [
 ]
 
 struct Translate: ParsableCommand {
-	@Argument()
-	var slInput: String
+    @Argument(help: "Language code of source file")
+	var sl: String
 
-	@Argument()
-	var tlInput: String
+    @Argument(help: "Language code of translation")
+	var tl: String
 
     @Argument(help: "Path to a single file or directory to translate.")
     var path: String
@@ -51,8 +51,8 @@ struct Translate: ParsableCommand {
     var outputPath: String?
 
 	func run() throws {
-        slCode = slInput
-        tlCode = tlInput
+        slCode = sl
+        tlCode = tl
         inputPath = path
         tlOutputPath = outputPath
         startColt()

@@ -30,7 +30,7 @@ Your files must be in the format used for .strings files. In this format, keys a
 
 To start Colt, run the following in Terminal:
 ```
-colt [sourceLanguage] [translationLanguage] [pathToFileOrDirectory]
+colt [sourceLanguageCode] [translationLanguageCode] [pathToFileOrDirectory]
 ```
 Which would look something like:
 ```
@@ -38,7 +38,7 @@ colt en es /Users/angiesanders/Documents/WORK/MyProject
 ```
 
 
-Language codes will be used for both [sourceLanguage] and [translationLanguage]. For codes and supported language pairs, please refer to the SYSTRAN.io section below. 
+Language codes will be used for both `sl` (source language) and `tl` (translation language) arguments. For codes and supported language pairs, please refer to the SYSTRAN.io section below. 
 
 The path argument can be used two different ways:
 
