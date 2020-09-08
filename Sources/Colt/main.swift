@@ -98,12 +98,20 @@ func startColt() {
     //swiftlint:disable line_length
     stringsFileHeader = "/*\nThis file was translated using Colt on \(Date())\nhttps://github.com/mmwwwhahaha/colt\nSource language: \(slCode)\nTranslated to: \(tlCode)\n*/"
 
+    // validate output path
+    if let outputPath = tlOutputPath {
+        if outputPath.directoryExists {
+            tlOutputPath?.append(tlCode + "_" + slStringsFileName)
+        } else if !outputPath.directoryExists && !outputPath.deletingLastPathComponent.directoryExists {
+            showError("Please enter a valid output path")
+        }
+    }
+    
     inputPathIsDirectory = inputPath.directoryExists
     inputPathIsDirectory ? findAllStringsFiles() : findSingleStringsFile()
 }
 
 func findSingleStringsFile() {
-    inputPathIsDirectory = false
     if !inputPath.starts(with: "file://") {
         inputPath = "file://" + inputPath
     }
@@ -219,15 +227,8 @@ func translationComplete() {
         showError("Colt has stopped. Strings were unable to be translated")
     }
 
-    // TODO: Move to pre-translation
-    if let outputPath = tlOutputPath {
-        if outputPath.directoryExists {
-            createNewStringsFile(at: URL(fileURLWithPath: outputPath).appendingPathComponent(tlCode + "_" + slStringsFileName))
-        } else if !outputPath.directoryExists && outputPath.deletingLastPathComponent.directoryExists {
-            createNewStringsFile(at: URL(fileURLWithPath: outputPath))
-        } else {
-            showError("Please enter a valid output path")
-        }
+    if let tlOutputPath = tlOutputPath {
+        createNewStringsFile(at: URL(fileURLWithPath: tlOutputPath)) // tlOutputPath was validated at the start
     } else if !inputPathIsDirectory {
         guard let targetURL = slStringsURL?.deletingLastPathComponent() else { showError("Unable to create new file from existing file's URL"); return }
         createNewStringsFile(at: targetURL)
