@@ -62,11 +62,6 @@ struct Translate: ParsableCommand {
 func startColt() {
     print("Colt Translating: \(slCode) to \(tlCode)")
     
-    // Check if valid output path
-    if let tlOutputPath = tlOutputPath, !tlOutputPath.directoryExists {
-        showError("Output path directory does not exist.")
-    }
-            
     // Retreive rapidapi-key from .colt file in home directory
     var coltFilePath: URL
     if #available(OSX 10.12, *) {
@@ -224,21 +219,20 @@ func translationComplete() {
         showError("Colt has stopped. Strings were unable to be translated")
     }
 
-    if let tlOutputPath = tlOutputPath { // already checked if directory exists at start
-        createNewFileURL(at: tlOutputPath, withTlPrefix: true)
+    // TODO: Move to pre-translation
+    if let outputPath = tlOutputPath {
+        if outputPath.directoryExists {
+            createNewStringsFile(at: URL(fileURLWithPath: outputPath).appendingPathComponent(tlCode + "_" + slStringsFileName))
+        } else if !outputPath.directoryExists && outputPath.deletingLastPathComponent.directoryExists {
+            createNewStringsFile(at: URL(fileURLWithPath: outputPath))
+        } else {
+            showError("Please enter a valid output path")
+        }
     } else if !inputPathIsDirectory {
-        guard let targetURL = slStringsURL?.deletingLastPathComponent().absoluteString else { showError("Unable to create new file from existing file's URL"); return }
-        createNewFileURL(at: targetURL, withTlPrefix: true)
+        guard let targetURL = slStringsURL?.deletingLastPathComponent() else { showError("Unable to create new file from existing file's URL"); return }
+        createNewStringsFile(at: targetURL)
     } else {
         createNewDirectory()
-    }
-}
-
-func createNewFileURL(at path: String, withTlPrefix: Bool = false) {
-    let tlCodePrefix = withTlPrefix ? tlCode + "_" : ""
-    tlStringsURL = URL(fileURLWithPath: path).appendingPathComponent(tlCodePrefix + slStringsFileName, isDirectory: false)
-    if let tlStringsURL = tlStringsURL {
-        createNewStringsFile(at: tlStringsURL)
     }
 }
 
@@ -256,7 +250,7 @@ func createNewDirectory() {
             createNewStringsFile(at: tlStringsURL)
         }
     } catch {
-        showError("Could now create translation language directory")
+        showError("Could not create translation language directory")
     }
 }
 

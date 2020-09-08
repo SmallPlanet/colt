@@ -32,6 +32,10 @@ extension String {
     var directoryExists: Bool {
         return FileManager.default.directoryExists(self)
     }
+    
+    var deletingLastPathComponent: String {
+        return (self as NSString).deletingLastPathComponent
+    }
 }
 
 extension Data {
